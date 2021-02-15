@@ -1,0 +1,15 @@
+*.xml*
+mapac_data/
+*.Rhistory*
+.RData*
+samples_data/
+.Rproj.user
+OLD/
+OLD_SAMPLES/
+auto_top_samples/
+*.Rout
+*.out
+*.docx
+*.html
+R/OLD_SCRIPTS/
+*_samples.RData

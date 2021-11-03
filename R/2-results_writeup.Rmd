@@ -1,7 +1,7 @@
 ---
-title: "Automation Failures in ATC: Standard Results"
+title: "Automation Reliability in ATC: Mixed Model Analyses"
 author: "ljgs"
-date: "20/11/2019"
+date: "20/09/2021"
 output:
   word_document: default
   html_document: default
@@ -31,8 +31,8 @@ colnames(cleandats)[colnames(cleandats)=="cond"] <- "Condition"
 colnames(cleandats)[colnames(cleandats)=="S"] <- "Stimulus"
 colnames(cleandats)[colnames(cleandats)=="failtrial"] <- "Automation"
 
-cleandats$Session <- factor(cleandats$Session, levels=c("1", "2"),
-                      labels=c("One", "Two"))
+cleandats$Session <- factor(cleandats$Session, levels=c("1", "2", "3"),
+                      labels=c("One", "Two", "Three"))
 
 cleandats$Condition <- factor(cleandats$Condition , levels=c("AUTO_L", "AUTO_H", "MANUAL"),
                       labels=c("Automation_Low", "Automation_High", "Manual"))
@@ -69,6 +69,15 @@ cond_auto <- accs %>% group_by(Condition, Automation) %>% summarise(mean(acc))
 cond_auto_se <- arr2df(
   se2(accs, facs=c("Condition", "Automation"), dvnam="acc"))
 
+pandoc.table(cond_auto)
+```
+
+```{r response_accuracy_ids, echo= FALSE, message=FALSE, warning=FALSE,fig.height = 8, fig.width = 13,fig.cap=acc_cap}
+
+
+ggplot(accs, aes(Automation, acc)) +geom_point(aes(col=Condition, shape=Condition), size=3)  + 
+  facet_grid(Session~Stimulus) +ylab ("Accuracy") +xlab("") +
+    theme(text = element_text(size = 21))
 
 ```
 
@@ -133,7 +142,17 @@ cond_auto_RT <- RTs %>% group_by(Condition, Automation) %>% summarise(mean(RT))
 cond_auto_se_RT <- arr2df(
   se2(RTs, facs=c("Condition", "Automation"), dvnam="RT"))
 
+pandoc.table(cond_auto_RT)
 
+
+RTs_nos3 <- cleandats %>% filter(block!="three" & Session!="Three") %>% group_by(s, Stimulus, Condition, Automation, Session) %>% 
+  filter(C) %>% 
+  summarise(RT=mean(RT))%>% arrange(Automation)
+
+
+cond_auto_RT_nos3 <- RTs_nos3 %>% group_by(Condition, Automation) %>% summarise(mean(RT))
+
+pandoc.table(cond_auto_RT_nos3)
 
 ```
 

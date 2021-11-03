@@ -5,6 +5,7 @@ mapac_data/
 samples_data/
 .Rproj.user
 OLD/
+OLD_DATA/
 OLD_SAMPLES/
 auto_top_samples/
 *.Rout

@@ -36,13 +36,11 @@ dats$rkey[!dats$rkey %in% c("F", "J")] <- NA
 
 #convert response key to responses
 dats$R <- NA
-key_set <- rep(
-  c(rep(1:2, 6), rep(2:1, 6)),
-  2
-)
+key_set <- c(rep(1:2, 6), rep(2:1, 6))
+
 
 for (i in unique(dats$ppt)) {
-  counterbalance <- (as.numeric(i) %% 12) + 1
+  counterbalance <- (as.numeric(i) %% 24) + 1
   cb_key <- key_set[counterbalance]
   if (cb_key==1) {
     dats$R[dats$rkey=="F" & dats$ppt==i] <- "C"
@@ -77,8 +75,8 @@ cleandats$failtrial <- factor(cleandats$failtrial,
                               levels=c("FALSE", "TRUE"),
                               labels=c("nonf", "fail"))
 cleandats$sess <- factor(cleandats$sess)
-cleandats$block <- factor(cleandats$block, levels=c("1", "2"),
-                          labels= c("one", "two"))
+cleandats$block <- factor(cleandats$block, levels=c("1", "2", "3"),
+                          labels= c("one", "two", "three"))
 
 colnames(cleandats)[colnames(cleandats)=='ppt'] <- 's'
 colnames(cleandats)[colnames(cleandats)=='stimulus'] <- 'S'
@@ -124,6 +122,44 @@ all(full_df$stimulus[full_df$response=="MISS_CONFLICT"]=="conflict")
 all(full_df$stimulus[full_df$response=="MISS_NON_CONFLICT"]=="nonconflict")
 
 
+
+
+
+dats2 <- full_df[, c("ppt", "sess", "block", "cond", "stimulus",
+                    "failtrial",
+                    "response", "rkey", "RT", "score", 
+                    "cumulative_score", "response")]
+
+#Get responses from Rkey
+dats2$rkey[!dats2$rkey %in% c("F", "J")] <- NA
+
+#convert response key to responses
+dats2$R <- NA
+key_set <- c(rep(1:2, 6), rep(2:1, 6))
+
+
+for (i in unique(dats2$ppt)) {
+  counterbalance <- (as.numeric(i) %% 24) + 1
+  cb_key <- key_set[counterbalance]
+  if (cb_key==1) {
+    dats2$R[dats2$rkey=="F" & dats2$ppt==i] <- "C"
+    dats2$R[dats2$rkey=="J"& dats2$ppt==i] <- "N" }
+  else {
+    dats2$R[dats2$rkey=="F"& dats2$ppt==i] <- "N"
+    dats2$R[dats2$rkey=="J"& dats2$ppt==i] <- "C"     
+  }
+  
+}
+
+dats2$stimulus <- factor(dats2$stimulus, levels = c("nonconflict", "conflict"),
+                        labels=c("n", "c"))
+
+
+all(dats2$R[dats2$response=="HIT_CONFLICT_ONTIME"]=="C")
+all(dats2$R[dats2$response=="FALSE_ALARM_CONFLICT"]=="C")
+all(dats2$R[dats2$response=="FALSE_ALARM_NON_CONFLICT"]=="N")
+all(dats2$R[dats2$response=="FALSE_ALARM_NON_CONFLICT"]=="N")
+
 table(dats$sess, dats$ppt, dats$cond, dats$block)
 
 
@@ -133,27 +169,27 @@ dats <-
   dats %>% group_by(ppt, sess, cond) %>% mutate(trial_counter=1:length(RT))
 
 #check auto failure trials are same
-all(dats$trial_counter[dats$failtrial & dats$cond=="MANUAL"]==
-      dats$trial_counter[dats$failtrial & dats$cond=="AUTO"])
-
-all(dats$stimulus[dats$failtrial & dats$cond=="MANUAL"]==
-      dats$stimulus[dats$failtrial & dats$cond=="AUTO"])
-
-dats$DOMS <- full_df$DOMS
-dats$ac1speed <- full_df$ac1_speed
-
-all(dats$DOMS[dats$failtrial & dats$cond=="MANUAL"]==
-      dats$DOMS[dats$failtrial & dats$cond=="AUTO"])
-
-all(dats$ac1speed[dats$failtrial & dats$cond=="MANUAL"]==
-      dats$ac1speed[dats$failtrial & dats$cond=="AUTO"])
-
-dats$stimulus[!dats$failtrial & dats$cond=="MANUAL"]==
-  dats$stimulus[!dats$failtrial & dats$cond=="AUTO"]
-
-dats$ac1speed[!dats$failtrial & dats$cond=="MANUAL"]==
-  dats$ac1speed[!dats$failtrial & dats$cond=="AUTO"]
-
-dats$DOMS[!dats$failtrial & dats$cond=="MANUAL"]==
-  dats$DOMS[!dats$failtrial & dats$cond=="AUTO"]
+# all(dats$trial_counter[dats$failtrial & dats$cond=="MANUAL"]==
+#       dats$trial_counter[dats$failtrial & dats$cond=="AUTO"])
+# 
+# all(dats$stimulus[dats$failtrial & dats$cond=="MANUAL"]==
+#       dats$stimulus[dats$failtrial & dats$cond=="AUTO"])
+# 
+# dats$DOMS <- full_df$DOMS
+# dats$ac1speed <- full_df$ac1_speed
+# 
+# all(dats$DOMS[dats$failtrial & dats$cond=="MANUAL"]==
+#       dats$DOMS[dats$failtrial & dats$cond=="AUTO"])
+# 
+# all(dats$ac1speed[dats$failtrial & dats$cond=="MANUAL"]==
+#       dats$ac1speed[dats$failtrial & dats$cond=="AUTO"])
+# 
+# dats$stimulus[!dats$failtrial & dats$cond=="MANUAL"]==
+#   dats$stimulus[!dats$failtrial & dats$cond=="AUTO"]
+# 
+# dats$ac1speed[!dats$failtrial & dats$cond=="MANUAL"]==
+#   dats$ac1speed[!dats$failtrial & dats$cond=="AUTO"]
+# 
+# dats$DOMS[!dats$failtrial & dats$cond=="MANUAL"]==
+#   dats$DOMS[!dats$failtrial & dats$cond=="AUTO"]
 

@@ -25,28 +25,31 @@ options(digits=2)
 
 load("samples_data/CA_top_samples.RData")
 
-# pp <- h.post.predict.dmc(CA_top_samples, save.simulation = TRUE, cores=8)
-# 
-# theme_set(theme_simple())
-# 
-# rescore_column <- function(df) {
-#   df$R <- factor(as.character(toupper(substr(df$S,1,1))==df$R))
-#   new_data <- attr(df, "data")
-#   new_data$R <- factor(as.character(toupper(substr(new_data$S,1,1))==new_data$R))
-# #  new_data <- new_data %>% select(C, everything())
-#   #%>% select(-R)
-#   attr(df, "data") <- new_data
-# #  df %>% select(reps, C, everything())
-#   #%>% select(-R)
-#   df
-# }
-# 
-# pp1 <- lapply(pp, rescore_column)
-# 
-# 
-# fitlist <- GET.fitgglist.dmc(pp1, factors=c("cond", "failtrial"))
-# save(pp, fitlist,
-#      file="samples_data/CA_top_samples_pp.RData")
+
+CA_top_samples <- CA_top_samples[!(names(CA_top_samples) %in% c("12", "21"))]
+
+pp <- h.post.predict.dmc(CA_top_samples, save.simulation = TRUE, cores=23)
+
+theme_set(theme_simple())
+
+rescore_column <- function(df) {
+  df$R <- factor(as.character(toupper(substr(df$S,1,1))==df$R))
+  new_data <- attr(df, "data")
+  new_data$R <- factor(as.character(toupper(substr(new_data$S,1,1))==new_data$R))
+#  new_data <- new_data %>% select(C, everything())
+  #%>% select(-R)
+  attr(df, "data") <- new_data
+#  df %>% select(reps, C, everything())
+  #%>% select(-R)
+  df
+}
+
+pp1 <- lapply(pp, rescore_column)
+
+
+fitlist <- GET.fitgglist.dmc(pp1, factors=c("cond", "failtrial"))
+save(pp, fitlist,
+     file="samples_data/CA_top_samples_pp.RData")
 
 load("samples_data/CA_top_samples_pp.RData")
 
@@ -105,12 +108,12 @@ grid.arrange(plot1,plot2,plot3)
 ```
 
 ```{r evaluate_model_params_calc, echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
-
+# 
 # msds <- get.msds(CA_top_samples)
 # 
 # save(msds, file=
 #       "samples_data/msds_top_samples.RData")
-
+# 
 load("samples_data/msds_top_samples.RData")
 
 paste.msd <- function(x) paste(signif(x["M"],2), "(", 
@@ -149,7 +152,8 @@ Vs_cap <- "Figure 8. Estimates of accumulation rates. The shapes indicate the po
 Vs <- msds[grep("mean_v", rownames(msds)),]
 
 Vs$Cond <- "Manual" 
-Vs$Cond[grep("A", rownames(Vs))] <- "Automation"
+Vs$Cond[grep("L", rownames(Vs))] <- "Low"
+Vs$Cond[grep("H", rownames(Vs))] <- "High"
 Vs$Auto <- "Automation Correct"
 Vs$Auto[grep("fail", rownames(Vs))] <- "Automation Incorrect"
 Vs$S <- "Conflict"
@@ -260,10 +264,13 @@ Bs <- msds[grep("B", rownames(msds)),]
 
 Bs$R <- "Non-conflict"
 Bs$R[grep("C", rownames(Bs))] <- "Conflict"
-Bs$Cond <- "Automation"
-Bs$Cond[grep("M", rownames(Bs))] <- "Manual"
+Bs$Cond <- "Manual"
+Bs$Cond[grep("L", rownames(Bs))] <- "Low"
+Bs$Cond[grep("H", rownames(Bs))] <- "High"
 Bs$Session <- "Session One"
 Bs$Session[grep("2", rownames(Bs))] <- "Session Two"
+Bs$Session[grep("3", rownames(Bs))] <- "Session Three"
+
 
 names(Bs)[names(Bs)=="Cond"] <- "Condition"
 

@@ -59,6 +59,8 @@ save(dats, file="img/dats_raw.RData")
 
 load("img/dats_raw.RData")
 
+dats <- dats %>% group_by(ppt, sess, block) %>% mutate(trialnum=1:length(RT))
+
 #DATA EXCLUSIONS - NON RESPONSES AND <200MS
 100* length(dats$RT[is.na(dats$RT)])/length(dats$RT) 
 cleandats <- dats[!is.na(dats$RT),]
@@ -81,7 +83,7 @@ cleandats$block <- factor(cleandats$block, levels=c("1", "2", "3"),
 colnames(cleandats)[colnames(cleandats)=='ppt'] <- 's'
 colnames(cleandats)[colnames(cleandats)=='stimulus'] <- 'S'
 cleandats <- cleandats[,c("s", "sess", "block", "cond",
-                          "failtrial", "S", "R", "RT")]
+                          "failtrial", "trialnum", "S", "R", "RT")]
 
 cleandats$RT <- cleandats$RT/1000
 

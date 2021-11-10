@@ -88,6 +88,24 @@ CA_top_samples <- h.samples.dmc(nmc = 180,
 
 save(CA_top_samples, file="CA_top_samples.RData")
 
+
+##Carryover hypothesis - try trimming the first 100 trials of each block.
+
+cleandats_lesscarryover <- cleandats %>% filter(trialnum>100)
+
+CA__lesscarryover_dm <- data.model.dmc(cleandats_lesscarryover,
+                            CA_top_model)
+
+CA_lesscarryover_samples <- h.samples.dmc(nmc = 180,
+                                CA_top_p.prior,
+                                CA__lesscarryover_dm, thin=20)
+
+save(CA_lesscarryover_samples, file="CA_lesscarryover_samples.RData")
+
+
+
+
+
 # # Reviewer comment: Inhibition/excitation mechanisms by day (practice effects?)
 # 
 # CA_sess_model <- model.dmc(

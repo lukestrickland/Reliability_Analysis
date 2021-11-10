@@ -43,6 +43,13 @@ cleandats$Automation <- factor(cleandats$Automation, levels=c("nonf", "fail"),
 cleandats$Stimulus <- factor(cleandats$Stimulus, levels=c("c", "n"),
                       labels=c("Conflict", "Non-conflict"))
 
+
+tmp <- 1:24
+tmp <- tmp[!tmp==4]
+full_balance <- c(tmp, 28) 
+
+cleandats <- cleandats %>% filter(s %in% full_balance)
+
 theme_set(theme_simple())
 
 accs <-
@@ -53,6 +60,20 @@ accs <-
 RTs <- cleandats %>% group_by(s, Stimulus, Condition, Automation, Session) %>% 
   filter(C) %>% 
   summarise(RT=mean(RT))%>% arrange(Automation)
+
+
+```
+
+
+```{r check_participants,  echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
+accs_check <-
+  cleandats %>% group_by(s, Condition, Automation, Session) %>% 
+  filter(!is.na(R)) %>% summarise(acc = mean(C)) %>%
+  arrange(s) %>% arrange(Automation)
+
+accs_check %>% filter(acc<0.1)
+
+accs_check %>% filter(acc<0.6 & Automation=="Automation Success")
 
 
 ```

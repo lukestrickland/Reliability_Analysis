@@ -5,4 +5,4 @@ load_model("LBA", "lba_B.R")
 run.grid.dmc("CA_lesscarryover_samples",model.dir ="LBA",
              model.file="lba_B.R",user="ljs392",
              n.add=60, wall.hours = 300,
-             GB = 3, max.try=30)
+             GB = 3, max.try=5)

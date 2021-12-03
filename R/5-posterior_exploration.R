@@ -1,4 +1,3 @@
-source("R/functions.R")
 source("dmc/dmc.R")
 source("dmc/dmc_extras.R")
 load_model ("LBA","lba_B.R")
@@ -69,7 +68,7 @@ acc_effects <- function (currentsim) {
   H_fail_loss <- NA; L_fail_loss <- NA;
   
   acc_tibble <- currentsim %>% group_by(failtrial, cond) %>% 
-    summarise(acc= mean(toupper(substr(S,1,1))==R), war)
+    summarise(acc= mean(toupper(substr(S,1,1))==R))
   
   H_nonf_gain <- acc_tibble$acc[acc_tibble$failtrial=="nonf" & acc_tibble$cond=="H"] -
                     acc_tibble$acc[acc_tibble$failtrial=="nonf" & acc_tibble$cond=="M"] 
@@ -98,12 +97,68 @@ acc_effects <- function (currentsim) {
 full <- get.effects.dmc(pp, fun = acc_effects)
 noinh <- get.effects.dmc(no_inh, fun = acc_effects)
 noex <- get.effects.dmc(no_ex, fun = acc_effects)
+nothres <- get.effects.dmc(no_thres, fun = acc_effects)
 
-full$model <- "full"; noinh$model <- "noinh"; noex$model <- "noex"
-full$eff <- rownames(full); noinh$eff <- rownames(noinh); noex$eff <- rownames(noex)
+full$model <- "full"; noinh$model <- "noinh"; noex$model <- "noex"; nothres$model <-"nothres"
+full$eff <- rownames(full); noinh$eff <- rownames(noinh); noex$eff <- rownames(noex); nothres$eff <- rownames(nothres)
 
-combined <- rbind(full,noinh, noex)
+combined <- rbind(full,noinh, noex, nothres)
 
 theme_set(theme_classic())
 
-combined %>% ggplot(aes(y=mean, x=eff)) + geom_point(aes(shape=model), size=2)
+combined %>% ggplot(aes(y=mean, x=eff)) + geom_point(aes(shape=model), size=2) +
+  geom_point(aes_string(x = 'eff', y= 'data'), pch=21, size=3, colour="black")+
+ geom_line(aes(group=1,y=data), linetype=2)
+
+
+
+
+RT_effects <- function (currentsim) {
+  
+  H_nonf_decrease <- NA; L_nonf_decrease <- NA;
+  H_fail_increase <- NA; L_fail_increase <- NA;
+  
+  RT_tibble <- currentsim %>% filter(toupper(substr(S,1,1))==R) %>%
+    group_by(failtrial, cond) %>% 
+    summarise(RT= mean(RT))
+  
+  H_nonf_decrease <- RT_tibble$RT[RT_tibble$failtrial=="nonf" & RT_tibble$cond=="M"] -
+    RT_tibble$RT[RT_tibble$failtrial=="nonf" & RT_tibble$cond=="H"]
+  
+  L_nonf_decrease <- RT_tibble$RT[RT_tibble$failtrial=="nonf" & RT_tibble$cond=="M"] -
+    RT_tibble$RT[RT_tibble$failtrial=="nonf" & RT_tibble$cond=="L"]
+  
+  H_fail_increase <- RT_tibble$RT[RT_tibble$failtrial=="fail" & RT_tibble$cond=="H"] -
+    RT_tibble$RT[RT_tibble$failtrial=="fail" & RT_tibble$cond=="M"]
+  
+  L_fail_increase <- RT_tibble$RT[RT_tibble$failtrial=="fail" & RT_tibble$cond=="L"] -
+    RT_tibble$RT[RT_tibble$failtrial=="fail" & RT_tibble$cond=="M"]
+    
+  
+  out <- c(H_nonf_decrease, L_nonf_decrease, H_fail_increase, L_fail_increase)
+  
+  names(out) <- c(
+    "H_nonf_decrease", "L_nonf_decrease", "H_fail_increase", "L_fail_increase"
+  )
+  
+  out
+  
+}
+
+
+full <- get.effects.dmc(pp, fun = RT_effects)
+noinh <- get.effects.dmc(no_inh, fun = RT_effects)
+noex <- get.effects.dmc(no_ex, fun = RT_effects)
+nothres <- get.effects.dmc(no_thres, fun = RT_effects)
+
+full$model <- "full"; noinh$model <- "noinh"; noex$model <- "noex"; nothres$model <-"nothres"
+full$eff <- rownames(full); noinh$eff <- rownames(noinh); noex$eff <- rownames(noex); nothres$eff <- rownames(nothres)
+
+combined <- rbind(full,noinh, noex, nothres)
+
+theme_set(theme_classic())
+
+combined %>% ggplot(aes(y=mean, x=eff)) + geom_point(aes(shape=model), size=2) +
+  geom_point(aes_string(x = 'eff', y= 'data'), pch=21, size=3, colour="black")+
+  geom_line(aes(group=1,y=data), linetype=2)
+

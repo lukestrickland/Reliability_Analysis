@@ -3,9 +3,9 @@ title: "Automation Reliability in ATC: Mixed Model Analyses"
 author: "ljgs"
 date: "20/09/2021"
 output:
-  word_document: default
   html_document: default
   pdf_document: default
+  word_document: default
 ---
 by Luke Strickland
 
@@ -17,7 +17,7 @@ library(tidyr)
 library(ggplot2)
 library(lme4)
 library(car)
-library(lsmeans)
+# library(lsmeans)
 library(pander)
 options(digits=2)
 source("R/0-analysis_functions.R")
@@ -90,7 +90,7 @@ cond_auto <- accs %>% group_by(Condition, Automation) %>% summarise(mean(acc))
 cond_auto_se <- arr2df(
   se2(accs, facs=c("Condition", "Automation"), dvnam="acc"))
 
-pandoc.table(cond_auto)
+# pandoc.table(cond_auto)
 ```
 
 ##### Accuracy
@@ -102,9 +102,9 @@ Accuracy was lower on session one
 (*M* = `r sess[sess$Session=="One",2]`, *SE* = `r sess_se["One"]`)
 than on session two
 (*M* = `r sess[sess$Session=="Two",2]`, *SE* = `r sess_se["Two"]`)
-. The effects of automation condition and automation accuracy interacted. Participant accuracy was higher for trials where participants were provided correct automation (*M* = `r cond_auto[cond_auto$Condition=="Automation" & cond_auto$Automation=="Automation Success",3]`, 
-*SE* = `r cond_auto_se[cond_auto_se$Condition=="Automation" & cond_auto_se$Automation=="Automation Success",3]`) than for corresponding manual trials (*M* = `r cond_auto[cond_auto$Condition=="Manual" & cond_auto$Automation=="Automation Success",3]`, 
-*SE* = `r cond_auto_se[cond_auto_se$Condition=="Manual" & cond_auto_se$Automation=="Automation Failure",3]`), and lower when participants were provided incorrect automation (*M* = `r cond_auto[cond_auto$Condition=="Automation" & cond_auto$Automation=="Automation Failure",3]`, 
+. The effects of automation condition and automation accuracy interacted. Participant accuracy was higher for trials where participants were provided correct automation (*M* = `r cond_auto[cond_auto$Condition=="Automation_High" & cond_auto$Automation=="Automation Success",3]`, 
+*SE* = `r cond_auto_se[cond_auto_se$Condition=="Automation_High" & cond_auto_se$Automation=="Automation Success",3]`) than for corresponding manual trials (*M* = `r cond_auto[cond_auto$Condition=="Manual" & cond_auto$Automation=="Automation Success",3]`, 
+*SE* = `r cond_auto_se[cond_auto_se$Condition=="Manual" & cond_auto_se$Automation=="Automation Failure",3]`), and lower when participants were provided incorrect automation (*M* = `r cond_auto[cond_auto$Condition=="Automation_High" & cond_auto$Automation=="Automation Failure",3]`, 
 *SE* = `r cond_auto_se[cond_auto_se$Condition=="Manual" & cond_auto_se$Automation=="Automation Failure",3]`), as compared with matched manual trials (*M* = `r cond_auto[cond_auto$Condition=="Manual" & cond_auto$Automation=="Automation Failure",3]`, 
 *SE* = `r cond_auto_se[cond_auto_se$Condition=="Manual" & cond_auto_se$Automation=="Automation Failure",3]`). These results suggest that participants did use the automation to their advantage, but on trials where the automation failed, it imposed a substantial cost to their accuracy. However, importantly, accuracy on automation incorrect trials was far from floor, suggesting that participants did not rely on the automation entirely.
 
@@ -153,7 +153,7 @@ cond_auto_RT <- RTs %>% group_by(Condition, Automation) %>% summarise(mean(RT))
 cond_auto_se_RT <- arr2df(
   se2(RTs, facs=c("Condition", "Automation"), dvnam="RT"))
 
-pandoc.table(cond_auto_RT)
+# pandoc.table(cond_auto_RT)
 
 
 RTs_nos3 <- cleandats %>% filter(block!="three" & Session!="Three") %>% group_by(s, Stimulus, Condition, Automation, Session) %>% 
@@ -163,7 +163,7 @@ RTs_nos3 <- cleandats %>% filter(block!="three" & Session!="Three") %>% group_by
 
 cond_auto_RT_nos3 <- RTs_nos3 %>% group_by(Condition, Automation) %>% summarise(mean(RT))
 
-pandoc.table(cond_auto_RT_nos3)
+# pandoc.table(cond_auto_RT_nos3)
 
 ```
 
@@ -173,22 +173,22 @@ Mean correct RTs are displayed in Figure 6. There were main effects of stimulus 
 (*M* = `r S_RT[S_RT$Stimulus=="Conflict",2]`, *SE* = `r S_se_RT["Conflict"]`)
 than to non-conflict trials
 (*M* = `r S_RT[S_RT$Stimulus=="Non-conflict",2]`, *SE* = `r S_se_RT["Non-conflict"]`). The effects of condition and automation accuracy interacted. Correct RTs were not substantially slower on trials where participants were provided correct automation 
-(*M* = `r cond_auto_RT %>% filter(Automation=='Automation Success' & Condition=='Automation') %>% 
-pull('mean(RT)')` *SE* = `r cond_auto_se_RT %>% filter(Automation=='Automation Success' & Condition=='Automation') %>% 
+(*M* = `r cond_auto_RT %>% filter(Automation=='Automation Success' & Condition=="Automation_High") %>% 
+pull('mean(RT)')` *SE* = `r cond_auto_se_RT %>% filter(Automation=='Automation Success' & Condition=="Automation_High") %>% 
 .$y`)
 than on corresponding manual trials (*M* = `r cond_auto_RT %>% filter(Automation=='Automation Success' & Condition=='Manual') %>% 
 pull('mean(RT)')` *SE* = `r cond_auto_se_RT %>% filter(Automation=='Automation Success' & Condition=='Manual') %>% 
 .$y`). By contrast, there were large differences in correct RT between automation-incorrect trials
-(*M* = `r cond_auto_RT %>% filter(Automation=='Automation Failure' & Condition=='Automation') %>% 
-pull('mean(RT)')` *SE* = `r cond_auto_se_RT %>% filter(Automation=='Automation Failure' & Condition=='Automation') %>% 
+(*M* = `r cond_auto_RT %>% filter(Automation=='Automation Failure' & Condition=="Automation_High") %>% 
+pull('mean(RT)')` *SE* = `r cond_auto_se_RT %>% filter(Automation=='Automation Failure' & Condition=="Automation_High") %>% 
 .$y`)
 and matched manual trials (*M* = `r cond_auto_RT %>% filter(Automation=='Automation Failure' & Condition=='Manual') %>% 
 pull('mean(RT)')` *SE* = `r cond_auto_se_RT %>% filter(Automation=='Automation Failure' & Condition=='Manual') %>% 
 .$y`). The effects of condition and session also interacted. On session one,
 RTs were slower in the automation condition
-(*M* = `r sess_cond_RT %>% filter(Session=='One' & Condition=='Automation') %>% 
+(*M* = `r sess_cond_RT %>% filter(Session=='One' & Condition=="Automation_High") %>% 
 pull('mean(RT)')`,
-*SE* = `r sess_cond_se_RT["One", "Automation"]`)
+*SE* = `r sess_cond_se_RT["One", "Automation_High"]`)
 than in the manual condition
 (*M* = `r sess_cond_RT %>% filter(Session=='One' & Condition=='Manual') %>% 
 pull('mean(RT)')`,
@@ -196,9 +196,9 @@ pull('mean(RT)')`,
 .
 On session two, 
 RTs were less substantially slower in the automation condition
-(*M* = `r sess_cond_RT %>% filter(Session=='Two' & Condition=='Automation') %>% 
+(*M* = `r sess_cond_RT %>% filter(Session=='Two' & Condition=="Automation_High") %>% 
 pull('mean(RT)')`,
-*SE* = `r sess_cond_se_RT["Two", "Automation"]`)
+*SE* = `r sess_cond_se_RT["Two", "Automation_High"]`)
 than in the manual condition
 (*M* = `r sess_cond_RT %>% filter(Session=='Two' & Condition=='Manual') %>% 
 pull('mean(RT)')`,
@@ -234,85 +234,3 @@ ggplot(plot.df, aes(Automation, meanRT)) +geom_point(aes(col=Condition, shape=Co
   ))  +
     theme(text = element_text(size = 21))
 ```
-
-
-
-```{r, echo= FALSE, include=FALSE}
-
-specialdats <- cleandats
-specialdats$subjsesh <- interaction(cleandats$s, cleandats$Session)
-
-accs <-
-  specialdats %>% group_by(s, Condition, Automation) %>%
-  filter(!is.na(R)) %>% summarise(acc = mean(C)) %>%
-  arrange(s) %>% arrange(Automation)
-
-
-accs_success_effect <- accs %>% group_by(s) %>%
-  summarise(accboost = acc[Condition=="Automation" & Automation=="Automation Success"]-
-              acc[Condition=="Manual"& Automation=="Automation Success"])
-
-
-accs_failure_effect <- accs %>% group_by(s) %>%
-  summarise(accboost = acc[Condition=="Manual" & Automation=="Automation Failure"]-
-              acc[Condition=="Automation"& Automation=="Automation Failure"])
-
-
-mRTs <-
-  specialdats %>% group_by(s, Condition, Automation) %>%
-  filter(!is.na(R)) %>% summarise(mRT = mean(RT[C])) %>%
-  arrange(s) %>% arrange(Automation)
-
-
-
-mRTs_failure_effect <- mRTs %>% group_by(s) %>%
-  summarise(mRTboost = mRT[Condition=="Automation"& Automation=="Automation Failure"] -
-              mRT[Condition=="Manual" & Automation=="Automation Failure"]
-              )
-
-cor(mRTs_failure_effect$mRTboost, accs_failure_effect$accboost)
-
-
-
-accs_success_effect$accdrop <- accs_failure_effect$accboost
-accs_success_effect$RTcost <- mRTs_failure_effect$mRTboost
-#
-# fit_failsuccess <- lm(accdrop~accboost, data=accs_success_effect)
-# fit_failRT <- lm(accdrop~RTcost, data=accs_success_effect)
-# fit_successRT <- lm(accboost~RTcost, data=accs_success_effect)
-
-# theme_set(theme_classic())
-# #
-# # ggplot(accs_success_effect, aes(x=accboost, y=accdrop)) + geom_point() +
-# #    ylab("Failure cost") + xlab("Success improvement") +
-# #   geom_abline(slope=fit_failsuccess$coefficients[2], intercept=fit_failsuccess$coefficients[1], linetype=2)
-# #
-# # ggplot(accs_success_effect, aes(x=RTcost, y=accboost)) + geom_point() +
-# #    ylab("Success improvement") + xlab( "RT cost on failure trials") +
-# #   geom_abline(slope=fit_successRT$coefficients[2], intercept=fit_successRT$coefficients[1], linetype=2)
-# #
-# #  ggplot(accs_success_effect, aes(x=RTcost, y=accdrop)) + geom_point() +
-# #    ylab("Failure cost") + xlab( "RT cost on failure trials") +
-# #   geom_abline(slope=fit_failRT $coefficients[2], intercept=fit_failRT $coefficients[1], linetype=2)
-# #
-#
-#  users <- accs_success_effect %>%
-#    filter(accboost>0.05|accdrop>0.05) %>% .$s
-#
-# save(users, file="img/users.RData")
-
-
-cor_accinacc <- cor.test(accs_success_effect$accboost, accs_success_effect$accdrop)
-cor_accMRT <- cor.test(accs_success_effect$accboost, mRTs_failure_effect$mRTboost)
-
-
-```
-
-
-
-Although our design emphasised high trial numbers, rather than a large participant sample, we conducted exploratory correlational analyses to better understand the relationship between the costs and benefits of automation across participants. We examined whether the overall accuracy advantage provided by correct automation (correct automation trial accuracy - matched manual accuracy) was associated with the cost of automation on failure trials to either accuracy (matched failure trial accuracy - automation failure trial accuracy) or RT (automation failure trial RT - matched manual RT). We found that the accuracy increase caused by correct automation was strongly correlated with the accuracy cost of automation on automation-incorrect trials, *r* (`r cor_accinacc$parameter`)=
-`r cor_accinacc$estimate`. The accuracy increase on automation-correct trials was also positively correlated with the correct RT increase on automation-failure trials, *r* (`r cor_accMRT$parameter`)=
-`r cor_accMRT$estimate`, although this correlation did not meet our criterion for significance of .005. We report correlations between the three measures discussed above and the automation reliability questionnaire in the supplementary materials, in which no significant associations were found.
-
-In summary, when decision aids recommended the correct response, accuracy was much higher under automated conditions than on the equivalent matched manual trials. In contrast, when the decision aid provided an incorrect recommendation accuracy was much lower in automated conditions than on manual trials. When the decision aid provided the correct recommendation, RTs were not substantially different across automated and manual conditions, but when the decision aid provided the incorrect recommendation RTs were substantially slower for the automated compared to manual conditions. This combination of effects seems consistent with an inhibition account of decision aid use, in which conflicts between the decision aid and the participant task inputs cause inhibition of evidence accumulation. In the next section, we present an LBA account of our data which can formally measure latent processes such as inhibition.
-

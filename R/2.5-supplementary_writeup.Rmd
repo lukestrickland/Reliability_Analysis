@@ -80,7 +80,7 @@ effects of task repetition.*
 #   glmer(C ~ Stimulus * Condition * Session * Automation + (1 |s),
 #         data = cleandats,
 #         family = binomial(link = "probit"))
-# 
+
 
 save(acc_glmer_top, file = "img/acc_model.RData")
 

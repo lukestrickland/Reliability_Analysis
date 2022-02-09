@@ -7,58 +7,64 @@ load("samples_data/CA_top_samples_pp.RData")
 
 options(dplyr.summarise.inform = FALSE)
 
-pnames <- colnames(CA_top_samples[[1]]$theta)
+# pnames <- colnames(CA_top_samples[[1]]$theta)
+# 
+# thres_pickps_set <- rep(
+#   pnames[
+#    grep("B\\.M", pnames)
+#   ], 2
+# )
+# 
+# thres_pickps_other <- c(
+#   pnames[grep("B\\.L", pnames)],
+#   pnames[grep("B\\.H", pnames)]
+#   )
+# 
+# 
+# no_thres <- pickps.h.post.predict.dmc(CA_top_samples, 
+#                                       save.simulation = TRUE,
+#                                       pickps_set=thres_pickps_set, 
+#                                       pickps_other=thres_pickps_other)
+# 
+# save(no_thres, file= "samples_data/no_thres.RData")
 
-thres_pickps_set <- rep(
-  pnames[
-   grep("B\\.M", pnames)
-  ], 2
-)
+load("samples_data/no_thres.RData")
 
-thres_pickps_other <- c(
-  pnames[grep("B\\.L", pnames)],
-  pnames[grep("B\\.H", pnames)]
-  )
+# 
+# 
+# ex <- c("mean_v.nn.M.nonf.true", "mean_v.cc.M.nonf.true",
+#                    "mean_v.nn.M.fail.false", "mean_v.cc.M.fail.false")
+# 
+# ex_pickps_set <- rep(ex, 2)
+# 
+# ex_pickps_other <- c(str_replace(ex, "M", "L"), str_replace(ex, "M", "H"))
+# 
+# no_ex <- pickps.h.post.predict.dmc(CA_top_samples, 
+#                                       save.simulation = TRUE,
+#                                       pickps_set=ex_pickps_set, 
+#                                       pickps_other=ex_pickps_other)
+# 
+# save(no_ex, file= "samples_data/no_ex.RData")
 
+load("samples_data/no_ex.RData")
 
-no_thres <- pickps.h.post.predict.dmc(CA_top_samples, 
-                                      save.simulation = TRUE,
-                                      pickps_set=thres_pickps_set, 
-                                      pickps_other=thres_pickps_other)
+# 
+# 
+# inh <- c("mean_v.nn.M.nonf.false", "mean_v.cc.M.nonf.false",
+#         "mean_v.nn.M.fail.true", "mean_v.cc.M.fail.true")
+# 
+# inh_pickps_set <- rep(inh, 2)
+# 
+# inh_pickps_other <- c(str_replace(inh, "M", "L"), str_replace(inh, "M", "H"))
+# 
+# no_inh <- pickps.h.post.predict.dmc(CA_top_samples, 
+#                                    save.simulation = TRUE,
+#                                    pickps_set=inh_pickps_set, 
+#                                    pickps_other=inh_pickps_other)
+# 
+# save(no_inh, file= "samples_data/no_inh.RData")
 
-save(no_thres, file= "samples_data/no_thres.RData")
-
-
-ex <- c("mean_v.nn.M.nonf.true", "mean_v.cc.M.nonf.true",
-                   "mean_v.nn.M.fail.false", "mean_v.cc.M.fail.false")
-
-ex_pickps_set <- rep(ex, 2)
-
-ex_pickps_other <- c(str_replace(ex, "M", "L"), str_replace(ex, "M", "H"))
-
-no_ex <- pickps.h.post.predict.dmc(CA_top_samples, 
-                                      save.simulation = TRUE,
-                                      pickps_set=ex_pickps_set, 
-                                      pickps_other=ex_pickps_other)
-
-save(no_ex, file= "samples_data/no_ex.RData")
-
-
-inh <- c("mean_v.nn.M.nonf.false", "mean_v.cc.M.nonf.false",
-        "mean_v.nn.M.fail.true", "mean_v.cc.M.fail.true")
-
-inh_pickps_set <- rep(inh, 2)
-
-inh_pickps_other <- c(str_replace(inh, "M", "L"), str_replace(inh, "M", "H"))
-
-no_inh <- pickps.h.post.predict.dmc(CA_top_samples, 
-                                   save.simulation = TRUE,
-                                   pickps_set=inh_pickps_set, 
-                                   pickps_other=inh_pickps_other)
-
-save(no_inh, file= "samples_data/no_inh.RData")
-
-
+load("samples_data/no_inh.RData")
 
 
 

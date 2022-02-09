@@ -82,7 +82,7 @@ effects of task repetition.*
 #         family = binomial(link = "probit"))
 
 
-save(acc_glmer_top, file = "img/acc_model.RData")
+# save(acc_glmer_top, file = "img/acc_model.RData")
 
 load("img/acc_model.RData")
 
@@ -94,19 +94,46 @@ pandoc.table(
 Table S2
 
 *Follow up significance tests of the difference in conflict detection accuracy
-across conditions, conditional on whether the automation succeeded or failed. 
+across experimental sessions. 
 The z.ratio is the mean of the effect divided by its standard error.
 Tukey adjustments were applied to the included p-values.*
 
-```{r ldt_accuracy_trial_range, echo= FALSE, message=FALSE, warning=FALSE, results="asis",fig.height = 3, fig.width = 4}
-make_contrast_table(summary(
-  contrast(lsmeans(acc_glmer_top, ~Condition|Automation), 
-           method="pairwise")) %>% select(-df))
+```{r accuracy_session, echo= FALSE, message=FALSE, warning=FALSE, results="asis",fig.height = 3, fig.width = 4}
+
+emms_Session <- emmeans(acc_glmer_top, specs=~Session)
+
+make_contrast_table(
+  summary(
+  contrast(emms_Session, method=list("Session 1 - Session 2"= c(1,-1,0), 
+                                   "Session 2 - Session 3"= c(0,1,-1)))
+  )
+)
+
+
 
 ```
 
 
 Table S3
+
+*Follow up significance tests of the difference in conflict detection accuracy
+across conditions, conditional on whether the automation succeeded or failed. 
+The z.ratio is the mean of the effect divided by its standard error.
+Tukey adjustments were applied to the included p-values.*
+
+```{r ldt_accuracy_trial_range, echo= FALSE, message=FALSE, warning=FALSE, results="asis",fig.height = 3, fig.width = 4}
+
+summary_Condition_Automation <- summary(contrast(emmeans(acc_glmer_top, specs=~Condition|Automation), method="pairwise"))
+
+make_contrast_table(summary_Condition_Automation)  
+
+
+```
+
+
+
+
+Table S4
 
 *Wald Chi-Square significance tests for ongoing task RT. A linear
 mixed-effects model was fitted to mean correct PM RTs. Random intercepts were included for each
@@ -126,7 +153,30 @@ pandoc.table(
 
 ```
 
-Table S4
+Table S5
+
+*Follow up significance tests of the difference in RT
+across experimental sessions. 
+The z.ratio is the mean of the effect divided by its standard error.
+Tukey adjustments were applied to the included p-values.*
+
+```{r accuracy_session, echo= FALSE, message=FALSE, warning=FALSE, results="asis",fig.height = 3, fig.width = 4}
+
+emms_Session_RT <- emmeans(RT_model, specs=~Session)
+
+make_contrast_table(
+  summary(
+  contrast(emms_Session_RT, method=list("Session 1 - Session 2"= c(1,-1,0), 
+                                   "Session 2 - Session 3"= c(0,1,-1)))
+  )
+)
+
+
+
+```
+
+
+Table S6
 
 *Follow up significance tests of the differences in RT across
 experimental conditions, conditional on whether the automation
@@ -134,283 +184,9 @@ succeeded or failed. Tukey adjustments were applied to the included p-values.*
 
 ```{r RT_contrasts_1, echo= FALSE, message=FALSE, warning=FALSE, results="asis"}
 
-make_contrast_table(summary(
-  contrast(lsmeans(RT_model, ~Condition|Automation), 
-           method="pairwise")))
+summary_Condition_Automation_RT <- summary(contrast(emmeans(RT_model, specs=~Condition|Automation), method="pairwise"))
+
+make_contrast_table(summary_Condition_Automation_RT) 
 
 ```
-
-Table S5
-
-*Follow up significance tests of the differences in RT across
-experimental conditions, conditional on whether it was session 1 
-or session 2 of the experiment. Tukey adjustments were applied to the included p-values.*
-
-
-```{r RT_contrasts_2, echo= FALSE, message=FALSE, warning=FALSE, results="asis"}
-make_contrast_table(summary(
-  contrast(lsmeans(RT_model, ~Condition|Session),
-           method="pairwise")))
-
-```
-
-
-Table S5
-
-*Follow up significance tests of the differences in RT across
-experimental conditions, conditional on whether it was session 1 
-or session 2 of the experiment, and
-whether the automation provided the correct or incorrect
-recommendation. Tukey adjustments were applied to the included p-values.*
-
-```{r RT_contrasts_3, echo= FALSE, message=FALSE, warning=FALSE, results="asis"}
-make_contrast_table(summary(
-  contrast(lsmeans(RT_model, ~Condition|Session * Automation),
-           method="pairwise")))
-
-```
-
-# Analysis of correlations with automation trust questionnaire
-
-
-```{r, echo= FALSE, include=FALSE}
-
-specialdats <- cleandats
-specialdats$subjsesh <- interaction(cleandats$s, cleandats$Session)
-
-accs <-
-  specialdats %>% group_by(s, Condition, Automation) %>%
-  filter(!is.na(R)) %>% summarise(acc = mean(C)) %>%
-  arrange(s) %>% arrange(Automation)
-
-
-accs_success_effect <- accs %>% group_by(s) %>%
-  summarise(accboost = acc[Condition=="Automation" & Automation=="Automation Success"]-
-              acc[Condition=="Manual"& Automation=="Automation Success"])
-
-
-accs_failure_effect <- accs %>% group_by(s) %>%
-  summarise(accboost = acc[Condition=="Manual" & Automation=="Automation Failure"]-
-              acc[Condition=="Automation"& Automation=="Automation Failure"])
-
-
-mRTs <-
-  specialdats %>% group_by(s, Condition, Automation) %>%
-  filter(!is.na(R)) %>% summarise(mRT = mean(RT[C])) %>%
-  arrange(s) %>% arrange(Automation)
-
-
-
-mRTs_failure_effect <- mRTs %>% group_by(s) %>%
-  summarise(mRTboost = mRT[Condition=="Automation"& Automation=="Automation Failure"] -
-              mRT[Condition=="Manual" & Automation=="Automation Failure"]
-              )
-
-
-
-accs_success_effect$accdrop <- accs_failure_effect$accboost
-accs_success_effect$RTcost <- mRTs_failure_effect$mRTboost
-
-
-```
-
-
-
-```{r, echo= FALSE, include=FALSE}
-
-library(readxl)
-questionnaires <- read_xlsx("auto_trust_qs.xlsx")
-qs <- cbind(questionnaires$pid, rowMeans(questionnaires[2:7]))
-colnames(qs) <- c("s", "rel")
-
-qs<-as.data.frame(qs)
-qs$s <- as.character(qs$s)
-
-
-tmp <- full_join(as.data.frame(qs), accs_success_effect, by="s")
-
-cor_rel_accboost <- cor.test(tmp$rel, tmp$accboost)
-cor_rel_accdrop <-cor.test(tmp$rel, tmp$accdrop)
-
-cor_rel_RTcost <-cor.test(tmp$rel, tmp$RTcost)
-
-
-```
-
-We averaged the automation reliability scale across all questions for each participant.
-The mean reliability score was `r mean(qs$rel)` (SD = `r sd(qs$rel)`). Reliablity scores
-did not correlate with boosts in automation accuracy on successful automation trials, *r* (`r cor_rel_accboost$parameter`)=
-`r cor_rel_accboost$estimate`, *p* = `r cor_rel_accboost$p.value`
-costs to accuracy on automation incorrect trials *r* (`r cor_rel_accdrop$parameter`)=
-`r cor_rel_accdrop$estimate`, *p* = `r cor_rel_accdrop$p.value`, or costs to RT
-on automation incorrect trials, *r* (`r cor_rel_RTcost$parameter`)=
-`r cor_rel_RTcost$estimate`, *p* = `r cor_rel_RTcost$p.value`.
-
-
-
-
-# Posterior exploration 
-
-To understand which model mechanisms contributed to our observed effects, we took a 
-"posterior exploration" approach, in which posterior predictions of the model are plotted
-against the data, and compared with posterior predictions of the model with various mechanisms
-removed. The results of our posterior exploration are depicted in Figure S2.
-
-```{r echo= FALSE , results = "hide",}
-exp_cap <- "*Figure S2.* Posterior exploration. Depicts predictions about automation accuracy benefits,
-automation inaccuracy costs, and automation RT costs. To understand how the model fits these effects,
-we attempted removing three mechanisms - excitation effects, inhibition effects, and threshold effects. Mechanisms
-were removed by setting parameters equal to manual conditions. For example, to remove excitation effects,
-the accumulation rates of the accumulators that agree with automation were set to matched accumulation rates in manual conditions. The observed effects in the data are depicted by the dashed lines. We plot model predictions averaged over subjects. The filled circles are the posterior mean predictions, and the error bars represent the 95% credible intervals."
-```
-
-
-```{r echo= FALSE , results = "hide", message=FALSE, warning=FALSE, fig.width = 6, fig.height=8, fig.cap=exp_cap}
-
-
-source("dmc/dmc.R")
-source("dmc/dmc_extras.R")
-load_model ("LBA", "lba_B.R")
-
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(pander)
-
-load("samples_data/CA_top_samples.RData")
-load("samples_data/CA_top_samples_pp.RData")
-#
-# automation_effects <- function (currentsim) {
-#   fail_effect <- NA; success_effect <- NA
-#   
-#   effects_tibble <- currentsim %>%
-#     mutate(C=(S=="nn" & R=="N")|(S=="cc" & R=="C")) %>% 
-#     group_by(cond, failtrial) %>%
-#     summarise(prop_correct=mean(C))
-#   
-#   RTeffects_tibble <- currentsim %>%
-#     mutate(C=(S=="nn" & R=="N")|(S=="cc" & R=="C")) %>% 
-#     group_by(cond, failtrial) %>%
-#     summarise(corRT =mean(RT[C]))
-#   
-#   fail_effect <-
-#     effects_tibble$prop_correct[effects_tibble$cond == "M" &
-#                                   effects_tibble$failtrial == "fail"] -
-#     effects_tibble$prop_correct[effects_tibble$cond == "A" &
-#                                   effects_tibble$failtrial == "fail"]
-#   
-#   success_effect <-
-#     effects_tibble$prop_correct[effects_tibble$cond == "A" &
-#                                   effects_tibble$failtrial == "nonf"] -
-#     effects_tibble$prop_correct[effects_tibble$cond == "M" &
-#                                   effects_tibble$failtrial == "nonf"]
-#   
-#   corRT_effect <- 
-#     RTeffects_tibble$corRT[RTeffects_tibble$cond == "A" &
-#                                   RTeffects_tibble$failtrial == "fail"] -
-#     RTeffects_tibble$corRT[RTeffects_tibble$cond == "M" &
-#                                   RTeffects_tibble$failtrial == "fail"]
-#   
-#   out <- c(success_effect, fail_effect, corRT_effect)
-#   names(out) <- c("success_effect", "fail_effect", "corRT_effect")
-#   out
-# }
-# 
-# 
-# pickps_set <- c(rownames(msds)[grepl("mean_v.*.M.fail.false", rownames(msds))],
-#                 rownames(msds)[grepl("mean_v.*.M.nonf.true", rownames(msds))])
-# 
-# pickps_other <- c(rownames(msds)[grepl("mean_v.*.A.fail.false", rownames(msds))],
-#                 rownames(msds)[grepl("mean_v.*.A.nonf.true", rownames(msds))])
-# 
-# noex <- pickps.h.post.predict.dmc(CA_top_samples, save.simulation = TRUE,
-#                                           pickps_set=pickps_set,
-#                                         pickps_other=pickps_other)
-# 
-# 
-# 
-# pickps_set <- c(rownames(msds)[grepl("mean_v.*.M.nonf.false", rownames(msds))],
-#                 rownames(msds)[grepl("mean_v.*.M.fail.true", rownames(msds))])
-# 
-# pickps_other <- c(rownames(msds)[grepl("mean_v.*.A.nonf.false", rownames(msds))],
-#                 rownames(msds)[grepl("mean_v.*.A.fail.true", rownames(msds))])
-# 
-# noinh <- pickps.h.post.predict.dmc(CA_top_samples, save.simulation = TRUE,
-#                                           pickps_set=pickps_set,
-#                                         pickps_other=pickps_other)
-# 
-
-# pickps_set <- rownames(msds)[grepl("B.A*", rownames(msds))]
-# 
-# pickps_other <- rownames(msds)[grepl("B.M*", rownames(msds))]
-# 
-# noB <- pickps.h.post.predict.dmc(CA_top_samples, save.simulation = TRUE,
-#                                           pickps_set=pickps_set,
-#                                         pickps_other=pickps_other)
-# 
-
-
-# 
-# top_auto_effects <- get.effects.dmc(pp, automation_effects)
-# noex_auto_effects <- get.effects.dmc(noex, automation_effects)
-# noinh_auto_effects <- get.effects.dmc(noinh, automation_effects)
-# noB_auto_effects <- get.effects.dmc(noB, automation_effects)
-# # 
-# top_auto_effects$Model <- "Top"
-# noex_auto_effects$Model <- "No_excitation"
-# noinh_auto_effects$Model <- "No_inhibition"
-# noB_auto_effects$Model <- "No_threshold_effects"
-# # 
-# save(noex, noinh, noB, top_auto_effects, noex_auto_effects, noinh_auto_effects,
-#        noB_auto_effects,
-#      file="samples_data/postexp.RData")
-
-load("samples_data/postexp.RData")
-
-effects <- rbind(top_auto_effects[1,], 
-                 noex_auto_effects[1,],
-                 noinh_auto_effects[1,],
-                 noB_auto_effects[1,])
-
-useplot <- ggplot(effects, aes(Model, mean))+ geom_point(size=4)  + geom_errorbar(aes(ymax = upper, ymin = lower), width= 0.2) + 
- geom_hline(yintercept=0, linetype=1,  show.legend=TRUE)+ geom_hline(aes(yintercept=data),linetype=2,  show.legend=TRUE)  +ylab("Accuracy Benefit") + ggtitle("Automation Correct") 
-
-effects <- rbind(top_auto_effects[2,], 
-                 noex_auto_effects[2,],
-                 noinh_auto_effects[2,],
-                 noB_auto_effects[2,])
-
-misuseplot <- ggplot(effects, aes(Model, mean))+ geom_point(size=4)  + geom_errorbar(aes(ymax = upper, ymin = lower), width= 0.2) + 
- geom_hline(yintercept=0, linetype=1,  show.legend=TRUE)+ geom_hline(aes(yintercept=data),linetype=2,  show.legend=TRUE) +xlab("Model")+ylab("Accuracy Cost") + ggtitle("Automation Incorrect")
-
-
-effects <- rbind(top_auto_effects[3,], 
-                 noex_auto_effects[3,],
-                 noinh_auto_effects[3,],
-                 noB_auto_effects[3,])
-
-RTplot <- ggplot(effects, aes(Model, mean))+ geom_point(size=4)  + geom_errorbar(aes(ymax = upper, ymin = lower), width= 0.2) + 
- geom_hline(yintercept=0, linetype=1,  show.legend=TRUE)+ geom_hline(aes(yintercept=data),  show.legend=TRUE, linetype=2)  +ylab("Correct RT Cost") + ggtitle("Automation Incorrect")
-
-grid.arrange(useplot, misuseplot, RTplot)
-
-
-
-```
-
-
-
-
-```{r echo= FALSE , results = "asis", message=FALSE, warning=FALSE}
-
-load("samples_data/msds_top_samples.RData")
-
-msds$M <- round(msds$M, 2)
-msds$SD <- round(msds$SD, 2)
-
-pandoc.table(msds)
-
-```
-
-
 

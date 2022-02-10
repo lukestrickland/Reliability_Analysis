@@ -3,8 +3,8 @@ title: "Automation Failures in ATC: Standard Results"
 author: "ljgs"
 date: "20/11/2019"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
   word_document: default
 ---
 by Luke Strickland
@@ -156,9 +156,8 @@ For inference we created a group-averaged posterior distribution, by averaging t
 
 Evidence accumulation rates are plotted in Figure 8. The effects of automation are evaluated by comparing the accumulation rate towards an automation trial with the corresponding accumulation rates in manual conditions. Excitation is indicated by increased accumulation towards the accumulator that agrees with the decision aid (i.e., match). For example, on a conflict trial on which the automation correctly recommends ‘conflict’, excitation would increase the conflict accumulation rate. Inhibition is indicated by reduced accumulation towards the accumulator that disagrees with the decision aid (i.e., mismatch). For example, for conflict trials on which the decision aid correctly labels a conflict, inhibition would reduce accumulation in the ‘non-conflict’ accumulator.
 
-Table 2 contains our statistical tests of excitation and inhibition effects. In the high-reliability condition, we find strong evidence of both. In the low-reliability condition,
-we found relatively stronger evidence of inhibition effects.
-
+Table 2 contains our statistical tests of excitation and inhibition effects. We found particularly strong effects in the high-reliability condition for both excitation and inhibition. In the low-reliability condition, we also found weaker (although still substantial) effects, with inhibition effects being
+greater than excitation effects.
 
 ```{r echo= FALSE}
 Vs_cap <- "Figure 8. Estimates of accumulation rates. The shapes indicate the posterior means and the error bars correspond to the mean plus or minus the posterior standard deviation."
@@ -318,7 +317,8 @@ pandoc.table(inhextab)
 
 # Threshold effects
 
-Threshold estimates are plotted in Figure 9. Statistical tests of differences across automated and manual conditions in thresholds are tabulated in Table 3. Consistent with Strickland et al. (2021), low-reliability automation had relatively little effect on thresholds, although there were some relatively small drops in threshold levels compared with the manual condition. In contrast, thresholds decreased more in the high-reliability condition, suggesting that participants potentially became less cautious as they
+Threshold estimates are plotted in Figure 9. Statistical tests of differences across automated and manual conditions in thresholds are tabulated in Table 3. Low-reliability automation had relatively little effect on thresholds, consistent with Strickland et al. (2021). However, there were some small drops in threshold levels compared with the manual condition, suggesting participants may have become less cautious when provided with automation. Threshold decreases were much stronger in the high-reliability condition, suggesting a substantial decrease in caution when participants were provided high-reliability
+automation.
 
 
 ```{r echo= FALSE}

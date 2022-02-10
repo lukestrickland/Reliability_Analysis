@@ -105,16 +105,31 @@ noinh <- get.effects.dmc(no_inh, fun = acc_effects)
 noex <- get.effects.dmc(no_ex, fun = acc_effects)
 nothres <- get.effects.dmc(no_thres, fun = acc_effects)
 
-full$model <- "full"; noinh$model <- "noinh"; noex$model <- "noex"; nothres$model <-"nothres"
+full$model <- "Full"; noinh$model <- "No Inhibition"
+noex$model <- "No Excitation"; nothres$model <-"Fixed Thresholds"
 full$eff <- rownames(full); noinh$eff <- rownames(noinh); noex$eff <- rownames(noex); nothres$eff <- rownames(nothres)
 
 combined <- rbind(full,noinh, noex, nothres)
 
-theme_set(theme_classic())
+combined$model <- factor(combined$model,
+                         levels = c("Full", "Fixed Thresholds",
+                                    "No Excitation", "No Inhibition"))
 
-combined %>% ggplot(aes(y=mean, x=eff)) + geom_point(aes(shape=model), size=2) +
+combined$Auto <- "Automation Correct (Accuracy Benefit)"
+combined$Auto[grep("fail", combined$eff)] <- "Automation Incorrect (Accuracy Cost)"
+
+combined$eff <- factor(combined$eff, levels=c("H_fail_loss",
+                                              "H_nonf_gain",
+                                              "L_fail_loss",
+                                              "L_nonf_gain"),
+                       labels=c("High Reliability", "High Reliability",
+                                "Low Reliability", "Low Reliability"))
+
+combined %>% ggplot(aes(y=mean, x=eff)) + geom_point(size=2)+ 
+  geom_errorbar(aes(ymax = upper, ymin = lower), width= 0.2) +
   geom_point(aes_string(x = 'eff', y= 'data'), pch=21, size=3, colour="black")+
- geom_line(aes(group=1,y=data), linetype=2)
+ geom_line(aes(group=1,y=data), linetype=2) +facet_grid(model~Auto) +xlab("")+
+  ylab("")
 
 
 
@@ -152,19 +167,38 @@ RT_effects <- function (currentsim) {
 }
 
 
-full <- get.effects.dmc(pp, fun = RT_effects)
-noinh <- get.effects.dmc(no_inh, fun = RT_effects)
-noex <- get.effects.dmc(no_ex, fun = RT_effects)
-nothres <- get.effects.dmc(no_thres, fun = RT_effects)
+full_RT <- get.effects.dmc(pp, fun = RT_effects)
+noinh_RT <- get.effects.dmc(no_inh, fun = RT_effects)
+noex_RT <- get.effects.dmc(no_ex, fun = RT_effects)
+nothres_RT <- get.effects.dmc(no_thres, fun = RT_effects)
 
-full$model <- "full"; noinh$model <- "noinh"; noex$model <- "noex"; nothres$model <-"nothres"
-full$eff <- rownames(full); noinh$eff <- rownames(noinh); noex$eff <- rownames(noex); nothres$eff <- rownames(nothres)
+full_RT$model <- "Full"; noinh_RT$model <- "No Inhibition"
+noex_RT$model <- "No Excitation"; nothres_RT$model <-"Fixed Thresholds"
+full_RT$eff <- rownames(full); noinh_RT$eff <- rownames(noinh)
+noex_RT$eff <- rownames(noex); nothres_RT$eff <- rownames(nothres)
 
-combined <- rbind(full,noinh, noex, nothres)
 
-theme_set(theme_classic())
+combined_RT <- rbind(full_RT,noinh_RT, noex_RT, nothres_RT)
 
-combined %>% ggplot(aes(y=mean, x=eff)) + geom_point(aes(shape=model), size=2) +
+combined_RT$model <- factor(combined_RT$model,
+                         levels = c("Full", "Fixed Thresholds",
+                                    "No Excitation", "No Inhibition"))
+
+combined_RT$Auto <- "Automation Correct (RT Benefit)"
+combined_RT$Auto[grep("fail", combined_RT$eff)] <- "Automation Incorrect (RT Cost)"
+
+combined_RT$eff <- factor(combined_RT$eff, levels=c("H_fail_loss",
+                                              "H_nonf_gain",
+                                              "L_fail_loss",
+                                              "L_nonf_gain"),
+                       labels=c("High Reliability", "High Reliability",
+                                "Low Reliability", "Low Reliability"))
+
+
+combined_RT %>% ggplot(aes(y=mean, x=eff)) + geom_point(size=2)+ 
+  geom_errorbar(aes(ymax = upper, ymin = lower), width= 0.2) +
   geom_point(aes_string(x = 'eff', y= 'data'), pch=21, size=3, colour="black")+
-  geom_line(aes(group=1,y=data), linetype=2)
+  geom_line(aes(group=1,y=data), linetype=2) +facet_grid(model~Auto) +xlab("")+
+  ylab("")
+
 

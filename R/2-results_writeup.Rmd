@@ -3,9 +3,9 @@ title: "Automation Reliability in ATC: Mixed Model Analyses"
 author: "ljgs"
 date: "20/09/2021"
 output:
-  html_document: default
-  pdf_document: default
   word_document: default
+  pdf_document: default
+  html_document: default
 ---
 by Luke Strickland
 
@@ -104,7 +104,7 @@ to session two
 (*M* = `r sess[sess$Session=="Two",2]`, *SE* = `r sess_se["Two"]`),
 and was higher still on session three (*M* = `r sess[sess$Session=="Three",2]`, *SE* = `r sess_se["Three"]`). The effects of automation condition and automation accuracy interacted. On trials where the automation was correct,
 accuracy was higher in the low-reliability automation condition (*M* = `r cond_auto[cond_auto$Condition=="Automation_Low" & cond_auto$Automation=="Automation Success",3]`, 
-*SE* = `r cond_auto_se[cond_auto_se$Condition=="Automation_Low" & cond_auto_se$Automation=="Automation Automation Success",3]`) than on matched manual trials (*M* = `r cond_auto[cond_auto$Condition=="Manual" & cond_auto$Automation=="Automation Success",3]`, 
+*SE* = `r cond_auto_se[cond_auto_se$Condition=="Automation_Low" & cond_auto_se$Automation=="Automation Success",3]`) than on matched manual trials (*M* = `r cond_auto[cond_auto$Condition=="Manual" & cond_auto$Automation=="Automation Success",3]`, 
 *SE* = `r cond_auto_se[cond_auto_se$Condition=="Manual" & cond_auto_se$Automation=="Automation Success",3]`),
 and higher still in the high-reliability automation condition (*M* = `r cond_auto[cond_auto$Condition=="Automation_High" & cond_auto$Automation=="Automation Success",3]`, 
 *SE* = `r cond_auto_se[cond_auto_se$Condition=="Automation_High" & cond_auto_se$Automation=="Automation Success",3]`). On trials where the automation was incorrect,

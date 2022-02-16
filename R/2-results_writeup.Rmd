@@ -216,3 +216,215 @@ ggplot(plot.df, aes(Automation, meanRT)) +geom_point(aes(col=Condition, shape=Co
   ))  +
     theme(text = element_text(size = 21))
 ```
+```{r, echo= FALSE, include=FALSE}
+specialdats <- cleandats
+specialdats$subjsesh <- interaction(cleandats$s, cleandats$Session)
+
+
+accs <-
+  specialdats %>% group_by(s, Condition, Automation) %>%
+  filter(!is.na(R)) %>% summarise(acc = mean(C)) %>%
+  arrange(s) %>% arrange(Automation)
+
+mRTs <-
+  specialdats %>% group_by(s, Condition, Automation) %>%
+  filter(!is.na(R)) %>% summarise(mRT = mean(RT[C])) %>%
+  arrange(s) %>% arrange(Automation)
+
+H_accs_success_effect <- accs %>% group_by(s) %>%
+  summarise(accboost = acc[Condition=="Automation_High" & Automation=="Automation Success"]-
+              acc[Condition=="Manual"& Automation=="Automation Success"])
+
+H_accs_failure_effect <- accs %>% group_by(s) %>%
+  summarise(accboost = acc[Condition=="Manual" & Automation=="Automation Failure"]-
+              acc[Condition=="Automation_High" & Automation=="Automation Failure"])
+
+H_mRTs_success_effect <- mRTs %>% group_by(s) %>%
+  summarise(mRTboost = mRT[Condition=="Manual" & Automation=="Automation Success"] -
+              mRT[Condition=="Automation_High" & Automation=="Automation Success"]
+              
+              )
+
+H_mRTs_failure_effect <- mRTs %>% group_by(s) %>%
+  summarise(mRTboost = mRT[Condition=="Automation_High" & Automation=="Automation Failure"] -
+              mRT[Condition=="Manual" & Automation=="Automation Failure"]
+              )
+
+
+
+
+L_accs_success_effect <- accs %>% group_by(s) %>%
+  summarise(accboost = acc[Condition=="Automation_Low" & Automation=="Automation Success"]-
+              acc[Condition=="Manual"& Automation=="Automation Success"])
+
+L_accs_failure_effect <- accs %>% group_by(s) %>%
+  summarise(accboost = acc[Condition=="Manual" & Automation=="Automation Failure"]-
+              acc[Condition=="Automation_Low" & Automation=="Automation Failure"])
+
+L_mRTs_success_effect <- mRTs %>% group_by(s) %>%
+  summarise(mRTboost = mRT[Condition=="Manual" & Automation=="Automation Success"] -
+              mRT[Condition=="Automation_Low" & Automation=="Automation Success"]
+              
+              )
+
+L_mRTs_failure_effect <- mRTs %>% group_by(s) %>%
+  summarise(mRTboost = mRT[Condition=="Automation_Low" & Automation=="Automation Failure"] -
+              mRT[Condition=="Manual" & Automation=="Automation Failure"]
+              )
+
+
+
+
+# 
+# 
+# H_accs_success_effect$accdrop <- H_accs_failure_effect$accboost
+# H_accs_success_effect$RTcost <- H_mRTs_failure_effect$mRTboost
+
+
+#
+# fit_failsuccess <- lm(accdrop~accboost, data=accs_success_effect)
+# fit_failRT <- lm(accdrop~RTcost, data=accs_success_effect)
+# fit_successRT <- lm(accboost~RTcost, data=accs_success_effect)
+# theme_set(theme_classic())
+# #
+# # ggplot(accs_success_effect, aes(x=accboost, y=accdrop)) + geom_point() +
+# #    ylab("Failure cost") + xlab("Success improvement") +
+# #   geom_abline(slope=fit_failsuccess$coefficients[2], intercept=fit_failsuccess$coefficients[1], linetype=2)
+# #
+# # ggplot(accs_success_effect, aes(x=RTcost, y=accboost)) + geom_point() +
+# #    ylab("Success improvement") + xlab( "RT cost on failure trials") +
+# #   geom_abline(slope=fit_successRT$coefficients[2], intercept=fit_successRT$coefficients[1], linetype=2)
+# #
+# #  ggplot(accs_success_effect, aes(x=RTcost, y=accdrop)) + geom_point() +
+# #    ylab("Failure cost") + xlab( "RT cost on failure trials") +
+# #   geom_abline(slope=fit_failRT $coefficients[2], intercept=fit_failRT $coefficients[1], linetype=2)
+# #
+#
+#  users <- accs_success_effect %>%
+#    filter(accboost>0.05|accdrop>0.05) %>% .$s
+#
+# save(users, file="img/users.RData")
+
+H_cor_accinacc <- cor.test(H_accs_success_effect$accboost,
+                           H_accs_failure_effect$accboost)
+
+H_cor_accMRTsucc <- cor.test(H_accs_success_effect$accboost,
+                             H_mRTs_success_effect$mRTboost)
+
+H_cor_accMRTfail <- cor.test(H_accs_success_effect$accboost,
+                             H_mRTs_failure_effect$mRTboost)
+
+
+
+L_cor_accinacc <- cor.test(L_accs_success_effect$accboost,
+                           L_accs_failure_effect$accboost)
+
+L_cor_accMRTsucc <- cor.test(L_accs_success_effect$accboost,
+                             L_mRTs_success_effect$mRTboost)
+
+L_cor_accMRTfail <- cor.test(L_accs_success_effect$accboost,
+                             L_mRTs_failure_effect$mRTboost)
+
+
+
+cor.test(L_accs_success_effect$accboost,
+                             H_accs_success_effect$accboost)
+
+cor.test(L_accs_failure_effect$accboost,
+                             H_accs_failure_effect$accboost)
+
+
+cor.test(L_mRTs_success_effect$mRTboost,
+                             H_mRTs_success_effect$mRTboost)
+
+cor.test(L_mRTs_failure_effect$mRTboost,
+                             H_mRTs_failure_effect$mRTboost)
+
+
+
+```
+
+
+
+```{r, echo= FALSE, include=FALSE}
+Auto_Trust_Scores <- read_csv("Auto_Trust_Scores.csv")
+
+Auto_Trust_Long <- Auto_Trust_Scores %>%  pivot_longer(cols=starts_with("D"), 
+               names_to = c("Session", "Condition", "Q"),
+               names_pattern=
+                 "D(.)_(.)_Q(.)")
+
+Auto_Trust_Long %>% group_by(Condition) %>% 
+  summarise(score=mean(value, na.rm=T))
+
+p_trust_scores <- Auto_Trust_Long %>% group_by(Participant, Condition)%>% 
+  summarise(score=mean(value, na.rm=T))
+
+colnames(p_trust_scores)[1] <- "s"
+
+p_trust_scores$s <- as.character(p_trust_scores$s)
+
+
+
+p_scores_autoboost <- p_trust_scores %>% filter(Condition=="H") %>% 
+  right_join(H_accs_success_effect, by="s")
+
+cor.test(p_scores_autoboost$score, p_scores_autoboost$accboost)
+
+
+
+p_scores_autoboost <- p_trust_scores %>% filter(Condition=="H") %>% 
+  right_join(H_accs_failure_effect, by="s")
+
+cor.test(p_scores_autoboost$score, p_scores_autoboost$accboost)
+
+
+
+
+p_scores_autoboost <- p_trust_scores %>% filter(Condition=="L") %>% 
+  right_join(L_accs_success_effect, by="s")
+
+cor.test(p_scores_autoboost$score, p_scores_autoboost$accboost)
+
+
+p_scores_autoboost <- p_trust_scores %>% filter(Condition=="L") %>% 
+  right_join(L_accs_failure_effect, by="s")
+
+cor.test(p_scores_autoboost$score, p_scores_autoboost$accboost)
+
+
+
+
+
+p_scores_autoboost <- p_trust_scores %>% filter(Condition=="H") %>% 
+  right_join(H_mRTs_success_effect, by="s")
+
+cor.test(p_scores_autoboost$score, p_scores_autoboost$mRTboost)
+
+
+
+p_scores_autoboost <- p_trust_scores %>% filter(Condition=="H") %>% 
+  right_join(H_mRTs_failure_effect, by="s")
+
+cor.test(p_scores_autoboost$score, p_scores_autoboost$mRTboost)
+
+
+
+
+p_scores_autoboost <- p_trust_scores %>% filter(Condition=="L") %>% 
+  right_join(H_mRTs_success_effect, by="s")
+
+cor.test(p_scores_autoboost$score, p_scores_autoboost$mRTboost)
+
+
+
+p_scores_autoboost <- p_trust_scores %>% filter(Condition=="L") %>% 
+  right_join(H_mRTs_failure_effect, by="s")
+
+cor.test(p_scores_autoboost$score, p_scores_autoboost$mRTboost)
+
+
+
+
+
+```

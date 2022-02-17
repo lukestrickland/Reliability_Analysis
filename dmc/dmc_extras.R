@@ -247,10 +247,20 @@ mean.sd <- function(samples, fun){
     paste(round(Z,2), " (", round(p,3), ")", sep="")
   }
 
+  
+  
 ##accepts a function and does it to the thetas for each subject then averages after
-group.inference.dist <- function (hsamples, fun) {
+group.inference.dist <- function (hsamples, fun, nmc= hsamples[[1]]$nmc) {
   inference <- list()
   for (i in 1:length(hsamples)) {
+    # browser()
+    
+    if (hsamples[[i]]$nmc > nmc) {hsamples[[i]]$theta <- 
+        hsamples[[i]]$theta[,,sample(1:dim(hsamples[[i]]$theta)[3], nmc)]
+    warning(paste("Participant ", i,
+              "has different n samples, taking a subset", sep=""))
+    }
+    
     thetas <- hsamples[[i]]$theta
     inference [[i]] <- fun (thetas)
   }

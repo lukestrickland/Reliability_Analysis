@@ -3,6 +3,12 @@ source("dmc/dmc_extras.R")
 load("samples_data/CA_top_samples.RData")
 load_model("LBA", "lba_B.R")
 
+tmp <- 1:24
+tmp <- tmp[!tmp==4]
+full_balance <- c(tmp, 28) 
+
+CA_top_samples <- CA_top_samples[names(CA_top_samples) %in% full_balance]
+
 theme_set(theme_simple())
 
 #First get plot of individual participant inhibition/excitation levels
@@ -37,56 +43,102 @@ get_individual_summaries <- function(theta_FUN, hsamples, effect_name){
 
 #Inhibition and excitation functions- averaged over the effects
 
-inhibition <- function(x) (
+H_inhibition <- function(x) (
                      (
                         #non-conflict, non-fail, false reduction   
-                        (x[,"mean_v.nn.M.nonf.false",,drop=FALSE] - x[,"mean_v.nn.A.nonf.false",,drop=FALSE]) +
+                        (x[,"mean_v.nn.M.nonf.false",,drop=FALSE] - x[,"mean_v.nn.H.nonf.false",,drop=FALSE]) +
                         #non-conflict, fail, true reduction
-                        (x[,"mean_v.nn.M.fail.true",,drop=FALSE] - x[,"mean_v.nn.A.fail.true",,drop=FALSE]) +
+                        (x[,"mean_v.nn.M.fail.true",,drop=FALSE] - x[,"mean_v.nn.H.fail.true",,drop=FALSE]) +
                         #conflict, non-fail, false reduction  
-                        (x[,"mean_v.cc.M.nonf.false",,drop=FALSE] - x[,"mean_v.cc.A.nonf.false",,drop=FALSE]) +
+                        (x[,"mean_v.cc.M.nonf.false",,drop=FALSE] - x[,"mean_v.cc.H.nonf.false",,drop=FALSE]) +
                         #conflict, fail, true reduction
-                        (x[,"mean_v.cc.M.fail.true",,drop=FALSE] - x[,"mean_v.cc.A.fail.true",,drop=FALSE]) 
+                        (x[,"mean_v.cc.M.fail.true",,drop=FALSE] - x[,"mean_v.cc.H.fail.true",,drop=FALSE]) 
                      )/4
 )
 
 
-excitation <- function(x) (
+H_excitation <- function(x) (
                      (
                         #non-conflict, non-fail, true increase   
-                        (x[,"mean_v.nn.A.nonf.true",,drop=FALSE] - x[,"mean_v.nn.M.nonf.true",,drop=FALSE]) +
+                        (x[,"mean_v.nn.H.nonf.true",,drop=FALSE] - x[,"mean_v.nn.M.nonf.true",,drop=FALSE]) +
                         #non-conflict, fail, false increase
-                        (x[,"mean_v.nn.A.fail.false",,drop=FALSE] - x[,"mean_v.nn.M.fail.false",,drop=FALSE]) +
+                        (x[,"mean_v.nn.H.fail.false",,drop=FALSE] - x[,"mean_v.nn.M.fail.false",,drop=FALSE]) +
                         #conflict, non-fail, true increase
-                        (x[,"mean_v.cc.A.nonf.true",,drop=FALSE] - x[,"mean_v.cc.M.nonf.true",,drop=FALSE]) +
+                        (x[,"mean_v.cc.H.nonf.true",,drop=FALSE] - x[,"mean_v.cc.M.nonf.true",,drop=FALSE]) +
                         #conflict, fail, false increase
-                        (x[,"mean_v.cc.A.fail.false",,drop=FALSE] - x[,"mean_v.cc.M.fail.false",,drop=FALSE]) 
+                        (x[,"mean_v.cc.H.fail.false",,drop=FALSE] - x[,"mean_v.cc.M.fail.false",,drop=FALSE]) 
                      )/4
 )
+
+L_inhibition <- function(x) (
+  (
+    #non-conflict, non-fail, false reduction   
+    (x[,"mean_v.nn.M.nonf.false",,drop=FALSE] - x[,"mean_v.nn.L.nonf.false",,drop=FALSE]) +
+      #non-conflict, fail, true reduction
+      (x[,"mean_v.nn.M.fail.true",,drop=FALSE] - x[,"mean_v.nn.L.fail.true",,drop=FALSE]) +
+      #conflict, non-fail, false reduction  
+      (x[,"mean_v.cc.M.nonf.false",,drop=FALSE] - x[,"mean_v.cc.L.nonf.false",,drop=FALSE]) +
+      #conflict, fail, true reduction
+      (x[,"mean_v.cc.M.fail.true",,drop=FALSE] - x[,"mean_v.cc.L.fail.true",,drop=FALSE]) 
+  )/4
+)
+
+
+L_excitation <- function(x) (
+  (
+    #non-conflict, non-fail, true increase   
+    (x[,"mean_v.nn.L.nonf.true",,drop=FALSE] - x[,"mean_v.nn.M.nonf.true",,drop=FALSE]) +
+      #non-conflict, fail, false increase
+      (x[,"mean_v.nn.L.fail.false",,drop=FALSE] - x[,"mean_v.nn.M.fail.false",,drop=FALSE]) +
+      #conflict, non-fail, true increase
+      (x[,"mean_v.cc.L.nonf.true",,drop=FALSE] - x[,"mean_v.cc.M.nonf.true",,drop=FALSE]) +
+      #conflict, fail, false increase
+      (x[,"mean_v.cc.L.fail.false",,drop=FALSE] - x[,"mean_v.cc.M.fail.false",,drop=FALSE]) 
+  )/4
+)
+
                
 
 
 
 
-effects_inhibition <- get_individual_summaries(
-  theta_FUN = inhibition, hsamples=CA_top_samples,
-                         effect_name= "Inhibition")
+effects_H_inhibition <- get_individual_summaries(
+  theta_FUN = H_inhibition, hsamples=CA_top_samples,
+                         effect_name= "H_Inhibition")
 
-effects_excitation <- get_individual_summaries(
-  theta_FUN = excitation, hsamples=CA_top_samples,
-                         effect_name= "Excitation")
+effects_H_excitation <- get_individual_summaries(
+  theta_FUN = H_excitation, hsamples=CA_top_samples,
+                         effect_name= "H_Excitation")
 
 
-all_effects <- rbind(effects_excitation,
-                            effects_inhibition)
+effects_L_inhibition <- get_individual_summaries(
+  theta_FUN = L_inhibition, hsamples=CA_top_samples,
+  effect_name= "L_Inhibition")
+
+effects_L_excitation <- get_individual_summaries(
+  theta_FUN = L_excitation, hsamples=CA_top_samples,
+  effect_name= "L_Excitation")
+
+
+all_effects <- rbind(effects_H_excitation,
+                            effects_H_inhibition,
+                     effects_L_inhibition,
+                     effects_L_excitation)
 
 all_effects$participant <- factor(as.numeric(all_effects$participant))
+
+all_effects$Condition <- "L"
+all_effects$Condition[grep("H", all_effects$effect)] <- "H"
+
+all_effects$DV <- "Excitation"
+all_effects$DV[grep("Inhibition", all_effects$effect)] <- "Inhibition"
+
 
 ggplot(all_effects, aes(participant, M)) +
     geom_point(stat = "identity", size=2.5) +
     geom_errorbar(aes(ymax = HCI , ymin = LCI, width = 0.3)) +
     geom_hline(aes(yintercept=0), linetype=2)+
-    facet_grid(.~effect) +xlab("Participant") +ylab ("Effect")
+    facet_grid(Condition~DV) +xlab("Participant") +ylab ("Effect")
 
 
 # Next look at correlations across participants between inhibition/excitation
@@ -102,17 +154,24 @@ automation_effects <- function (currentsim) {
   nonfail_accuracy_manual <- mean(substr(currentsim$S[currentsim$cond=="M" & currentsim$failtrial=="nonf"],2,2)==
                                     tolower(currentsim$R[currentsim$cond=="M" & currentsim$failtrial=="nonf"]))  
   
-  nonfail_accuracy_auto <- mean(substr(currentsim$S[currentsim$cond=="A" & currentsim$failtrial=="nonf"],2,2)==
-                                  tolower(currentsim$R[currentsim$cond=="A" & currentsim$failtrial=="nonf"]))  
+  nonfail_accuracy_H <- mean(substr(currentsim$S[currentsim$cond=="H" & currentsim$failtrial=="nonf"],2,2)==
+                                  tolower(currentsim$R[currentsim$cond=="H" & currentsim$failtrial=="nonf"]))  
+  
+  nonfail_accuracy_L <- mean(substr(currentsim$S[currentsim$cond=="L" & currentsim$failtrial=="nonf"],2,2)==
+                               tolower(currentsim$R[currentsim$cond=="L" & currentsim$failtrial=="nonf"])) 
   
   fail_accuracy_manual <- mean(substr(currentsim$S[currentsim$cond=="M" & currentsim$failtrial=="fail"],2,2)==
                                   tolower(currentsim$R[currentsim$cond=="M" & currentsim$failtrial=="fail"]))  
 
-  fail_accuracy_auto <- mean(substr(currentsim$S[currentsim$cond=="A" & currentsim$failtrial=="fail"],2,2)==
-                                  tolower(currentsim$R[currentsim$cond=="A" & currentsim$failtrial=="fail"]))  
+  fail_accuracy_H <- mean(substr(currentsim$S[currentsim$cond=="H" & currentsim$failtrial=="fail"],2,2)==
+                                  tolower(currentsim$R[currentsim$cond=="H" & currentsim$failtrial=="fail"])) 
   
-  out <- c(nonfail_accuracy_auto-nonfail_accuracy_manual, fail_accuracy_manual- fail_accuracy_auto)
-  names(out) <- c("benefit", "cost")
+  fail_accuracy_L <- mean(substr(currentsim$S[currentsim$cond=="L" & currentsim$failtrial=="fail"],2,2)==
+                            tolower(currentsim$R[currentsim$cond=="L" & currentsim$failtrial=="fail"]))  
+  
+  out <- c(nonfail_accuracy_H -nonfail_accuracy_manual, fail_accuracy_manual- fail_accuracy_H,
+           nonfail_accuracy_L -nonfail_accuracy_manual, fail_accuracy_manual- fail_accuracy_L)
+  names(out) <- c("H_benefit", "H_cost", "L_benefit","L_cost")
   out
   
 }
@@ -131,31 +190,58 @@ for (i in unique(data$s)) {
 #same functions as up above but cor.plausible function collapses all dimensions
 # before calculation
 
-inhibition_corplausible <- function(x) (
+inhibition_corplausible_H <- function(x) (
                      (
                         #non-conflict, non-fail, false reduction   
-                        (x["mean_v.nn.M.nonf.false"] - x["mean_v.nn.A.nonf.false"]) +
+                        (x["mean_v.nn.M.nonf.false"] - x["mean_v.nn.H.nonf.false"]) +
                         #non-conflict, fail, true reduction
-                        (x["mean_v.nn.M.fail.true"] - x["mean_v.nn.A.fail.true"]) +
+                        (x["mean_v.nn.M.fail.true"] - x["mean_v.nn.H.fail.true"]) +
                         #conflict, non-fail, false reduction  
-                        (x["mean_v.cc.M.nonf.false"] - x["mean_v.cc.A.nonf.false"]) +
+                        (x["mean_v.cc.M.nonf.false"] - x["mean_v.cc.H.nonf.false"]) +
                         #conflict, fail, true reduction
-                        (x["mean_v.cc.M.fail.true"] - x["mean_v.cc.A.fail.true"]) 
+                        (x["mean_v.cc.M.fail.true"] - x["mean_v.cc.H.fail.true"]) 
                      )/4
 )
 
 
-excitation_corplausible <- function(x) (
+excitation_corplausible_H <- function(x) (
                      (
                         #non-conflict non-fail true increase   
-                        (x["mean_v.nn.A.nonf.true"] - x["mean_v.nn.M.nonf.true"]) +
+                        (x["mean_v.nn.H.nonf.true"] - x["mean_v.nn.M.nonf.true"]) +
                         #non-conflict fail false increase
-                        (x["mean_v.nn.A.fail.false"] - x["mean_v.nn.M.fail.false"]) +
+                        (x["mean_v.nn.H.fail.false"] - x["mean_v.nn.M.fail.false"]) +
                         #conflict non-fail true increase
-                        (x["mean_v.cc.A.nonf.true"] - x["mean_v.cc.M.nonf.true"]) +
+                        (x["mean_v.cc.H.nonf.true"] - x["mean_v.cc.M.nonf.true"]) +
                         #conflict fail false increase
-                        (x["mean_v.cc.A.fail.false"] - x["mean_v.cc.M.fail.false"]) 
+                        (x["mean_v.cc.H.fail.false"] - x["mean_v.cc.M.fail.false"]) 
                      )/4
+)
+
+inhibition_corplausible_L <- function(x) (
+  (
+    #non-conflict, non-fail, false reduction   
+    (x["mean_v.nn.M.nonf.false"] - x["mean_v.nn.L.nonf.false"]) +
+      #non-conflict, fail, true reduction
+      (x["mean_v.nn.M.fail.true"] - x["mean_v.nn.L.fail.true"]) +
+      #conflict, non-fail, false reduction  
+      (x["mean_v.cc.M.nonf.false"] - x["mean_v.cc.L.nonf.false"]) +
+      #conflict, fail, true reduction
+      (x["mean_v.cc.M.fail.true"] - x["mean_v.cc.L.fail.true"]) 
+  )/4
+)
+
+
+excitation_corplausible_L <- function(x) (
+  (
+    #non-conflict non-fail true increase   
+    (x["mean_v.nn.L.nonf.true"] - x["mean_v.nn.M.nonf.true"]) +
+      #non-conflict fail false increase
+      (x["mean_v.nn.L.fail.false"] - x["mean_v.nn.M.fail.false"]) +
+      #conflict non-fail true increase
+      (x["mean_v.cc.L.nonf.true"] - x["mean_v.cc.M.nonf.true"]) +
+      #conflict fail false increase
+      (x["mean_v.cc.L.fail.false"] - x["mean_v.cc.M.fail.false"]) 
+  )/4
 )
 
 #See dmc tutorial "plausible" https://osf.io/pbwx8/
@@ -176,40 +262,71 @@ get_corplausible_MCI <- function(samples, cv, p.name, n, fun, kappa=1){
 }
 
 get_corplausible_MCI(CA_top_samples, 
-                     fun=inhibition_corplausible,
+                     fun=inhibition_corplausible_H,
                      cv=as.data.frame(out), 
-                     p.name="benefit", n=24)
+                     p.name="H_benefit", n=24)
 
 get_corplausible_MCI(CA_top_samples, 
-                     fun=inhibition_corplausible,
+                     fun=excitation_corplausible_H,
                      cv=as.data.frame(out), 
-                     p.name="cost", n=24)
+                     p.name="H_benefit", n=24)
+
 
 get_corplausible_MCI(CA_top_samples, 
-                     fun=excitation_corplausible,
+                     fun=inhibition_corplausible_L,
                      cv=as.data.frame(out), 
-                     p.name="benefit", n=24)
+                     p.name="L_benefit", n=24)
 
 get_corplausible_MCI(CA_top_samples, 
-                     fun=excitation_corplausible,
+                     fun=excitation_corplausible_L,
                      cv=as.data.frame(out), 
-                     p.name="cost", n=24)
+                     p.name="L_benefit", n=24)
+
+
+
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=inhibition_corplausible_H,
+                     cv=as.data.frame(out), 
+                     p.name="H_cost", n=24)
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=excitation_corplausible_H,
+                     cv=as.data.frame(out), 
+                     p.name="H_cost", n=24)
+
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=inhibition_corplausible_L,
+                     cv=as.data.frame(out), 
+                     p.name="L_cost", n=24)
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=excitation_corplausible_L,
+                     cv=as.data.frame(out), 
+                     p.name="L_cost", n=24)
+
+
+
 
 
 load("samples_data/CA_top_samples_pp.RData")
 load("samples_data/postexp.RData")
 
-subject_postexp<- get.subj.effects.m(list(pp, noinh, noex), automation_effects , 
-                          c("Full Model", "Inhibition Removed", "Excitation Removed"))
+subject_postexp<- get.subj.effects.m(list(pp, no_inh, no_ex, no_thres), automation_effects , 
+                          c("Full Model", "Inhibition Removed", "Excitation Removed", "Fixed Thresholds"))
 
-subject_postexp$effect <- factor(subject_postexp$effect, levels=c("benefit", "cost"),
-                      labels = c("Automation Benefit", "Automation Cost"))
+subject_postexp$effect <- factor(subject_postexp$effect, levels=c("H_benefit", "H_cost",
+                                                                  "L_benefit", "L_cost"),
+                      labels = c("Automation Benefit (H)", "Automation Cost (H)",
+                                 "Automation Benefit (L)", "Automation Cost (L)"))
 
-subject_postexp$model <- factor(subject_postexp$model, levels=c("Full Model", "Inhibition Removed",
+subject_postexp$model <- factor(subject_postexp$model, levels=c("Full Model","Fixed Thresholds",
+                                                                "Inhibition Removed",
                                           "Excitation Removed"))
 
 ggplot(subject_postexp, aes(data, mean)) + geom_point(size=1) + geom_abline(slope=1, intercept=0) +
 facet_grid(effect~model, scales = "free") + geom_errorbar(aes(ymax = upper, ymin = lower), alpha=0.3) +
-  ylab("Model") + xlab("Observed")+ theme(text = element_text(size = 20))
+  ylab("Model") + xlab("Observed")+ theme(text = element_text(size = 14))
 
 

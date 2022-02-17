@@ -4,8 +4,8 @@ author: "ljgs"
 date: "20/11/2019"
 output:
   word_document: default
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 by Luke Strickland
 
@@ -64,7 +64,8 @@ fitlist <- GET.fitgglist.dmc(pp1, factors=c("cond", "failtrial"))
 
 # Model Fit
 
-We obtained Bayesian estimates of model parameters using the Dynamic Models of Choice R Suite (Heathcote et al., 2018). These estimates take the form of posterior distributions, which are proportional to probability distributions of the model parameters given the data and prior information about the parameter values. The details of estimation are discussed in the supplementary materials. Figure 7 displays fit of the posterior predictions of the model to the data. Overall, the model closely fit to the data, including the effects of automation on accuracy and distributions of RT. 
+We obtained Bayesian estimates of model parameters using the Dynamic Models of Choice R Suite (Heathcote et al., 2018). These estimates take the form of posterior distributions, which are proportional to probability distributions of the model parameters given the data and prior information about the parameter values. The details of estimation are discussed in the supplementary materials. Figure 7 displays fit of the posterior predictions of the model to the data. Generally, the model fitted the data well, including the effects of automation on accuracy and distributions of RT. There was some minor miss-fit to median correct RT in the high-reliability condition, with
+the model somewhat underestimating the slowing induced by the automation. However, it is worth noting that the model was able to fit the direction of this effect, and that this represents a small number of responses (there are relatively few trials where the automation was incorrect in the high-reliability condition).
 
 ```{r echo= FALSE}
 pp_cap <- "Figure 7. Posterior predictions of performance, averaged over participants. The model predictions correspond to the white circles, the posterior means correspond to the black shaded dots. The error bars display the 95% posterior credible intervals of the predictions. Three quantiles of response time (RT) are depicted, with the 0.1 quantile of RT grouped on the bottom, the median RT at the middle, and the 0.9 quantile of RT at the top."
@@ -155,8 +156,8 @@ For inference we created a group-averaged posterior distribution, by averaging t
 
 Evidence accumulation rates are plotted in Figure 8. The effects of automation are evaluated by comparing the accumulation rate towards an automation trial with the corresponding accumulation rates in manual conditions. Excitation is indicated by increased accumulation towards the accumulator that agrees with the decision aid (i.e., match). For example, on a conflict trial on which the automation correctly recommends ‘conflict’, excitation would increase the conflict accumulation rate. Inhibition is indicated by reduced accumulation towards the accumulator that disagrees with the decision aid (i.e., mismatch). For example, for conflict trials on which the decision aid correctly labels a conflict, inhibition would reduce accumulation in the ‘non-conflict’ accumulator.
 
-Table 2 contains our statistical tests of excitation and inhibition effects. We found evidence of both. However, inhibition effects were much larger in magnitude than excitation effects. Furthermore, subsequent exploration of the model (see supplementary materials) indicated that inhibition was responsible for the majority of automation’s benefits to accuracy on success trials, and the majority of its cost to accuracy and RT on failure trials. These findings indicate that participants may utilize inhibition, rather than excitation, to avoid over-reliance on the automation in which decisions are made without consideration of task inputs.
-
+Table 2 contains our statistical tests of excitation and inhibition effects. We found evidence 
+of both excitation and inhibition in both conditions. These effects were particularly strong in the high-reliability condition. In the low-reliability condition, excitation effects were relatively weaker than inhibition effects.
 
 ```{r echo= FALSE}
 Vs_cap <- "Figure 8. Estimates of accumulation rates. The shapes indicate the posterior means and the error bars correspond to the mean plus or minus the posterior standard deviation."
@@ -198,66 +199,115 @@ Table 2
 
 ```{r echo= FALSE ,results = "hide", message=FALSE, warning=FALSE, results='asis'}
 
-conf_inh_fail <- zandp(CA_top_samples, 
+H_conf_inh_fail <- zandp(CA_top_samples, 
         function (thetas)
           thetas[,"mean_v.cc.M.fail.true",, drop=F] - 
-           thetas[,"mean_v.cc.A.fail.true",, drop=F])
+           thetas[,"mean_v.cc.H.fail.true",, drop=F])
 
-conf_ex_fail <- zandp(CA_top_samples, 
+H_conf_ex_fail <- zandp(CA_top_samples, 
         function (thetas)
-          thetas[,"mean_v.cc.A.fail.false",, drop=F] - 
+          thetas[,"mean_v.cc.H.fail.false",, drop=F] - 
           thetas[,"mean_v.cc.M.fail.false",, drop=F] 
            )
 
-conf_ex_success <- zandp(CA_top_samples, 
+H_conf_ex_success <- zandp(CA_top_samples, 
         function (thetas)
-          thetas[,"mean_v.cc.A.nonf.true",, drop=F] -
+          thetas[,"mean_v.cc.H.nonf.true",, drop=F] -
           thetas[,"mean_v.cc.M.nonf.true",, drop=F] 
            )
 
-conf_inh_success <- zandp(CA_top_samples, 
+H_conf_inh_success <- zandp(CA_top_samples, 
         function (thetas)
           thetas[,"mean_v.cc.M.nonf.false",, drop=F] - 
-           thetas[,"mean_v.cc.A.nonf.false",, drop=F])
+           thetas[,"mean_v.cc.H.nonf.false",, drop=F])
 
 
 
-nonconf_inh_fail <- zandp(CA_top_samples, 
+H_nonconf_inh_fail <- zandp(CA_top_samples, 
         function (thetas)
           thetas[,"mean_v.nn.M.fail.true",, drop=F] - 
-           thetas[,"mean_v.nn.A.fail.true",, drop=F])
+           thetas[,"mean_v.nn.H.fail.true",, drop=F])
 
-nonconf_ex_fail <- zandp(CA_top_samples, 
+H_nonconf_ex_fail <- zandp(CA_top_samples, 
         function (thetas)
-          thetas[,"mean_v.nn.A.fail.false",, drop=F] - 
+          thetas[,"mean_v.nn.H.fail.false",, drop=F] - 
           thetas[,"mean_v.nn.M.fail.false",, drop=F] 
            )
 
-nonconf_ex_success <- zandp(CA_top_samples, 
+H_nonconf_ex_success <- zandp(CA_top_samples, 
         function (thetas)
-          thetas[,"mean_v.nn.A.nonf.true",, drop=F] -
+          thetas[,"mean_v.nn.H.nonf.true",, drop=F] -
           thetas[,"mean_v.nn.M.nonf.true",, drop=F] 
            )
 
-nonconf_inh_success <- zandp(CA_top_samples, 
+H_nonconf_inh_success <- zandp(CA_top_samples, 
         function (thetas)
           thetas[,"mean_v.nn.M.nonf.false",, drop=F] - 
-           thetas[,"mean_v.nn.A.nonf.false",, drop=F])
+           thetas[,"mean_v.nn.H.nonf.false",, drop=F])
+
+
+
+L_conf_inh_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.M.fail.true",, drop=F] - 
+           thetas[,"mean_v.cc.L.fail.true",, drop=F])
+
+L_conf_ex_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.L.fail.false",, drop=F] - 
+          thetas[,"mean_v.cc.M.fail.false",, drop=F] 
+           )
+
+L_conf_ex_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.L.nonf.true",, drop=F] -
+          thetas[,"mean_v.cc.M.nonf.true",, drop=F] 
+           )
+
+L_conf_inh_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.M.nonf.false",, drop=F] - 
+           thetas[,"mean_v.cc.L.nonf.false",, drop=F])
+
+
+
+L_nonconf_inh_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.M.fail.true",, drop=F] - 
+           thetas[,"mean_v.nn.L.fail.true",, drop=F])
+
+L_nonconf_ex_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.L.fail.false",, drop=F] - 
+          thetas[,"mean_v.nn.M.fail.false",, drop=F] 
+           )
+
+L_nonconf_ex_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.L.nonf.true",, drop=F] -
+          thetas[,"mean_v.nn.M.nonf.true",, drop=F] 
+           )
+
+L_nonconf_inh_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.M.nonf.false",, drop=F] - 
+           thetas[,"mean_v.nn.L.nonf.false",, drop=F])
+
 
 
 
 
 inhextab <- rbind(
-  c(conf_ex_success, conf_inh_success),
-  c(conf_ex_fail, conf_inh_fail),
-  c(conf_ex_success, nonconf_inh_success),
-  c(conf_ex_fail, nonconf_inh_fail)
+  c(L_conf_ex_success, L_conf_inh_success, H_conf_ex_success, H_conf_inh_success),
+  c(L_conf_ex_fail, L_conf_inh_fail, H_conf_ex_fail, H_conf_inh_fail),
+  c(L_conf_ex_success, L_nonconf_inh_success, H_conf_ex_success, H_nonconf_inh_success),
+  c(L_conf_ex_fail, L_nonconf_inh_fail, H_conf_ex_fail, H_nonconf_inh_fail)
   
       )
 
 rownames(inhextab) <- c("Conflict Automation Success", "Conflict Automation Failure",
                         "Non-conflict Automation Success", "Non-conflict Automation Failure")
-colnames(inhextab) <- c("Excitation", "Inhibition")
+colnames(inhextab) <- c("Excitation (L)", "Inhibition (L)", "Excitation (H)", "Inhibition (H)")
 
 pandoc.table(inhextab)
 
@@ -267,7 +317,10 @@ pandoc.table(inhextab)
 
 # Threshold effects
 
-Threshold estimates are plotted in Figure 9. Statistical tests of differences across automated and manual conditions in thresholds are tabulated in Table 3. Overall, automation had little effect on thresholds. On session two, both conflict and non-conflict thresholds were slightly higher in manual conditions than automated conditions. However, simulations indicate that these effects did not contribute substantially to automation use or the effect of automation failures on correct RTs (supplementary materials). Thus, in the current design, automation primarily affected participants’ evidence accumulation, with little evidence for substantial shifts in their speed-accuracy trade-offs or bias. 
+Threshold estimates are plotted in Figure 9. Statistical tests of differences across automated and manual conditions in thresholds are tabulated in Table 3. There were some small drops in threshold levels in the low-reliability condition compared with the manual condition, suggesting participants may have become less cautious when provided with automation. There were relatively stronger decreases in thresholds observed in the high-reliability condition. However, our 
+supplementary analysis, where we explored how parameters affected the predictions of our model,
+we found that thresholds played a relatively minor role in the effects of automation on performance.
+
 
 ```{r echo= FALSE}
 Bs_cap <- "Figure 9. Estimates of thresholds. The shapes indicate the posterior means and the error bars correspond to the mean plus or minus the posterior standard deviation."
@@ -304,39 +357,98 @@ Table 3
 
 ```{r echo= FALSE , results = "asis", message=FALSE, warning=FALSE, fig.width = 8, fig.height=6}
 
-B_N_1_MvA <- zandp(CA_top_samples, 
+B_N_1_MvL <- zandp(CA_top_samples, 
         function (thetas)
           thetas[,"B.M.1.N",, drop=F] -
-          thetas[,"B.A.1.N",, drop=F] 
+          thetas[,"B.L.1.N",, drop=F] 
            )
 
-B_N_2_MvA <- zandp(CA_top_samples, 
+B_N_2_MvL <- zandp(CA_top_samples, 
         function (thetas)
           thetas[,"B.M.2.N",, drop=F] -
-          thetas[,"B.A.2.N",, drop=F] 
+          thetas[,"B.L.2.N",, drop=F] 
            )
 
-B_C_1_MvA <- zandp(CA_top_samples, 
+B_N_3_MvL <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.3.N",, drop=F] -
+          thetas[,"B.L.3.N",, drop=F] 
+           )
+
+
+
+B_C_1_MvL <- zandp(CA_top_samples, 
         function (thetas)
           thetas[,"B.M.1.C",, drop=F] -
-          thetas[,"B.A.1.C",, drop=F] 
+          thetas[,"B.L.1.C",, drop=F] 
            )
 
-B_C_2_MvA <- zandp(CA_top_samples, 
+B_C_2_MvL <- zandp(CA_top_samples, 
         function (thetas)
           thetas[,"B.M.2.C",, drop=F] -
-          thetas[,"B.A.2.C",, drop=F] 
+          thetas[,"B.L.2.C",, drop=F] 
            )
 
+B_C_3_MvL <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.3.C",, drop=F] -
+          thetas[,"B.L.3.C",, drop=F] 
+           )
+
+
+
+B_N_1_MvH <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.1.N",, drop=F] -
+          thetas[,"B.H.1.N",, drop=F] 
+           )
+
+B_N_2_MvH <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.2.N",, drop=F] -
+          thetas[,"B.H.2.N",, drop=F] 
+           )
+
+B_N_3_MvH <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.3.N",, drop=F] -
+          thetas[,"B.H.3.N",, drop=F] 
+           )
+
+
+
+B_C_1_MvH <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.1.C",, drop=F] -
+          thetas[,"B.H.1.C",, drop=F] 
+           )
+
+B_C_2_MvH <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.2.C",, drop=F] -
+          thetas[,"B.H.2.C",, drop=F] 
+           )
+
+B_C_3_MvH <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.3.C",, drop=F] -
+          thetas[,"B.H.3.C",, drop=F] 
+           )
+
+
 Btab <- rbind(
-  c(B_C_1_MvA, B_C_2_MvA),
-  c(B_N_1_MvA, B_N_2_MvA)
+  c(B_C_1_MvL, B_C_2_MvL, B_C_3_MvL),
+  c(B_N_1_MvL, B_N_2_MvL, B_N_3_MvL),
+  c(B_C_1_MvH, B_C_2_MvH, B_C_3_MvH),
+  c(B_N_1_MvH, B_N_2_MvH, B_N_3_MvH)
 
       )
 
-rownames(Btab) <- c("Conflict Accumulator",
-                    "Non-conflict Accumulator")
-colnames(Btab) <- c("Session One", "Session Two")
+rownames(Btab) <- c("Conflict Accumulator (L)",
+                    "Non-conflict Accumulator (L)",
+                    "Conflict Accumulator (H)",
+                    "Non-conflict Accumulator (H)")
+colnames(Btab) <- c("Session One", "Session Two", "Session Three")
 
 pandoc.table(Btab)
 

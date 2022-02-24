@@ -832,6 +832,227 @@ save(auto_top_samples, file="auto_top_samples.RData")
 
 
 
+rm(list=ls())
+
+
+create_model_data <- function(file) {
+  load(file)
+  cleandats <- cleandats[!colnames(cleandats) %in% "C"]
+  cleandats <- as.data.frame(cleandats)
+  cleandats$cond <- factor(cleandats$cond, levels=c("AUTO_H","AUTO_L", "MANUAL"),
+                           labels=c("H", "L", "M"))
+  
+  cleandats$S <- factor(cleandats$S, levels=c("n", "c"),
+                        labels=c("nn", "cc"))
+  
+  cleandats$R <- factor(cleandats$R, levels=c("N", "C"))
+  cleandats$s<- factor(cleandats$s)
+  cleandats
+}
+
+cleandats <- create_model_data("img/cleandats.RData")
+
+source("dmc/dmc.R")
+
+load_model("LBA", "lba_B_automation_diff.R")
+
+mapauto <-
+  empty.map(list(
+    S = c("nn", "cc"), cond = c("H", "L", "M"), sess = c("1", "2", "3"),
+    failtrial=c("nonf", "fail"),
+    R = c("N", "C")
+  ), 
+  levels=c(
+    "man",
+    "HanT","HanF",
+    "HacT", "HacF",
+    "LanT","LanF",
+    "LacT", "LacF"))
+
+mapauto[1:72] <- c(
+  "HanT","HacF","LanT","LacF","man", "man",
+  "HanT","HacF","LanT","LacF","man", "man",
+  "HanT","HacF","LanT","LacF","man", "man",
+  
+  "HacF","HanT","LacF","LanT","man", "man",
+  "HacF","HanT","LacF","LanT","man", "man",
+  "HacF","HanT","LacF","LanT","man", "man",
+  
+  "HanF","HacT","LanF","LacT","man", "man",
+  "HanF","HacT","LanF","LacT","man", "man",
+  "HanF","HacT","LanF","LacT","man", "man",
+  
+  "HacT","HanF","LacT","LanF","man", "man",
+  "HacT","HanF","LacT","LanF","man", "man",
+  "HacT","HanF","LacT","LanF","man", "man"
+  
+)
+
+#to make it less constrained (basically the equivalent of freely estimated accumulation rates) I would be able to separate
+# auto evidence for failures and successes - psychologically implausible?
+
+#A few checks on mapmeanv due to mind-bending twisting of levels
+
+mapauto[
+  grepl("M", names(mapauto)) ]
+
+mapauto[
+  grepl("nn", names(mapauto)) & grepl("nonf", names(mapauto)) &
+    !grepl("M", names(mapauto)) 
+]
+
+mapauto[
+  grepl("cc", names(mapauto)) & grepl("nonf", names(mapauto)) &
+    !grepl("M", names(mapauto)) 
+]
+
+mapauto[
+  grepl("nn", names(mapauto)) & grepl("fail", names(mapauto)) &
+    !grepl("M", names(mapauto)) 
+]
+
+mapauto[
+  grepl("cc", names(mapauto)) & grepl("fail", names(mapauto)) &
+    !grepl("M", names(mapauto)) 
+]
+
+#parameter to index differences across auto success/failure trials
+# in inhibition and excitation
+
+mapautodiff <-
+  empty.map(list(
+    S = c("nn", "cc"), cond = c("H", "L", "M"), sess = c("1", "2", "3"),
+    failtrial=c("nonf", "fail"),
+    R = c("N", "C")
+  ), 
+  c(
+    "none",
+    "hanT","hanF",
+    "hacT", "hacF",
+    "lanT","lanF",
+    "lacT", "lacF"))
+
+mapautodiff[1:72] <- c(
+  "hanT","hacF","lanT","lacF","none", "none",
+  "hanT","hacF","lanT","lacF","none", "none",
+  "hanT","hacF","lanT","lacF","none", "none",
+  
+  "hacF","hanT","lacF","lanT","none", "none",
+  "hacF","hanT","lacF","lanT","none", "none",
+  "hacF","hanT","lacF","lanT","none", "none",
+  
+  "hanF","hacT","lanF","lacT","none", "none",
+  "hanF","hacT","lanF","lacT","none", "none",
+  "hanF","hacT","lanF","lacT","none", "none",
+  
+  "hacT","hanF","lacT","lanF","none", "none",
+  "hacT","hanF","lacT","lanF","none", "none",
+  "hacT","hanF","lacT","lanF","none", "none"
+  
+)
+
+
+mapautodiff[grep("M", names(mapautodiff))] <- "none"
+mapautodiff[grep("nonf", names(mapautodiff))] <- "none"
+
+
+
+
+mapautodiff[
+  grepl("M", names(mapautodiff)) ]
+
+mapautodiff[
+  grepl("nn", names(mapautodiff)) & grepl("nonf", names(mapautodiff)) &
+    !grepl("M", names(mapautodiff)) 
+]
+
+mapautodiff[
+  grepl("cc", names(mapautodiff)) & grepl("nonf", names(mapautodiff)) &
+    !grepl("M", names(mapautodiff)) 
+]
+
+mapautodiff[
+  grepl("nn", names(mapautodiff)) & grepl("fail", names(mapautodiff)) &
+    !grepl("M", names(mapautodiff)) 
+]
+
+mapautodiff[
+  grepl("cc", names(mapautodiff)) & grepl("fail", names(mapautodiff)) &
+    !grepl("M", names(mapautodiff)) 
+]
+
+
+
+auto_noexL_model <- model.dmc(
+  p.map = list(
+    A = "1",B = c("cond", "sess", "R"), t0 = "1", mean_v = c("S", "M"),
+    sd_v = c("M"), st0 = "1", a= c("MAPAUTO"), diff= c("MAPAUTODIFF")),
+  match.map = list(
+    M = list(nn = "N", cc="C"),
+    MAPAUTO = mapauto,
+    MAPAUTODIFF = mapautodiff
+  ),
+  factors = list(
+    S = c("nn", "cc"), cond = c("H", "L", "M"), sess = c("1", "2", "3"),
+    failtrial=c("nonf", "fail")
+  ),
+  constants = c(st0 = 0, sd_v.false = 1, a.man=0, diff.none=0,
+                a.LacT = 0, a.LanT= 0, diff.lacT=0, diff.lanT =0
+  ),
+  responses = c("N", "C"),type = "norm"
+)
+
+
+pnames <- attr(auto_noexL_model, "p.vector")
+
+pnames[grep("A$", names(pnames))] <- 3
+pnames[grep("B", names(pnames))] <- 2
+pnames[grep("t0", names(pnames))] <- 0.3
+pnames[grep("true", names(pnames))] <- 1
+pnames[grep("false", names(pnames))] <- 0
+pnames[grep("a\\.", names(pnames))] <- 0
+pnames[grep("diff", names(pnames))] <- 0
+
+
+auto_noexL_p.vector  <- 
+  pnames[c(
+    names(pnames)[grep("t0", names(pnames))],
+    names(pnames)[grep("A$", names(pnames))],
+    names(pnames)[grep("sd_v", names(pnames))],
+    names(pnames)[grep("B", names(pnames))],
+    names(pnames)[grep("true", names(pnames))][
+      !grepl("sd_v", names(pnames)[grep("true", names(pnames))])
+    ],
+    names(pnames)[grep("false", names(pnames))],
+    names(pnames)[grep("a\\.", names(pnames))],
+    names(pnames)[grep("diff", names(pnames))]
+    
+  )
+  ]
+
+
+check.p.vector(auto_noexL_p.vector, auto_noexL_model)
+
+auto_noexL_p.prior <- prior.p.dmc(
+  dists = rep("tnorm", length(auto_noexL_p.vector)),
+  p1=auto_noexL_p.vector,                           
+  p2=c(1,1,1,rep(1, 18), rep(2, 16)),
+  lower=c(0.1, 0,0, rep(0, 18), rep(NA, 16)),
+  upper=c(5,10, rep(Inf, length(auto_noexL_p.vector)-2))
+)
+
+auto_noexL_dm <- data.model.dmc(cleandats,
+                              auto_noexL_model)
+
+auto_noexL_samples <- h.samples.dmc(nmc = 180,
+                                  auto_noexL_p.prior,
+                                  auto_noexL_dm, thin=20)
+
+save(auto_noexL_samples, file="auto_noexL_samples.RData")
+
+
+
+
 
 rm(list=ls())
 

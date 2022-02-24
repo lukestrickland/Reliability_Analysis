@@ -26,6 +26,8 @@ options(digits=2)
 
 load("samples_data/CA_top_samples.RData")
 
+
+
 # 
 # pp <- h.post.predict.dmc(CA_top_samples, save.simulation = TRUE, cores=length(CA_top_samples))
 # 
@@ -54,6 +56,7 @@ tmp <- 1:24
 tmp <- tmp[!tmp==4]
 full_balance <- c(tmp, 28) 
 
+CA_top_samples <- CA_top_samples[names(CA_top_samples) %in% full_balance]
 pp1 <- pp1[names(pp1) %in% full_balance]
 
 fitlist <- GET.fitgglist.dmc(pp1, factors=c("cond", "failtrial"))

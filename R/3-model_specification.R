@@ -261,6 +261,12 @@ save(CA_top_thresholdsmult_samples, file="CA_top_thresholdsmult_samples.RData")
 
 
 
+<<<<<<< HEAD
+
+
+
+
+=======
 # # Reviewer comment: Inhibition/excitation mechanisms by day (practice effects?)
 # 
 # CA_sess_model <- model.dmc(
@@ -522,6 +528,7 @@ save(CA_fixed_thresholds_samples, file="CA_fixed_thresholds_samples.RData")
 
 
 rm(list=ls())
+>>>>>>> 7b3829e497183ee3df41face34b70f3ebd63b375
 
 source("dmc/dmc.R")
 
@@ -546,9 +553,15 @@ cleandats <- create_model_data("img/cleandats.RData")
 #Full classic LBA model of the experiment
 load_model("LBA", "lba_B.R")
 
+<<<<<<< HEAD
+CA_sess_model <- model.dmc(
+  p.map = list(
+    A = "1",B = c("cond", "sess", "R"), t0 = "1", mean_v = c("S", "cond", "sess", "failtrial", "M"),
+=======
 CA_fixed_thresholds_model <- model.dmc(
   p.map = list(
     A = "1",B = c("sess", "R"), t0 = "1", mean_v = c("S", "cond", "failtrial", "M"),
+>>>>>>> 7b3829e497183ee3df41face34b70f3ebd63b375
     sd_v = c("M"), st0 = "1"),
   match.map = list(
     M = list(nn = "N", cc="C")
@@ -563,7 +576,11 @@ CA_fixed_thresholds_model <- model.dmc(
 )
 
 
+<<<<<<< HEAD
+pnames <- attr(CA_sess_model, "p.vector")
+=======
 pnames <- attr(CA_fixed_thresholds_model, "p.vector")
+>>>>>>> 7b3829e497183ee3df41face34b70f3ebd63b375
 
 pnames[grep("A", names(pnames))] <- 3
 pnames[grep("B", names(pnames))] <- 2
@@ -572,7 +589,11 @@ pnames[grep("true", names(pnames))] <- 1
 pnames[grep("false", names(pnames))] <- 0
 
 
+<<<<<<< HEAD
+CA_sess_p.vector  <- 
+=======
 CA_fixed_thresholds_p.vector  <- 
+>>>>>>> 7b3829e497183ee3df41face34b70f3ebd63b375
   pnames[c(
     names(pnames)[grep("t0", names(pnames))],
     names(pnames)[grep("A", names(pnames))],
@@ -588,6 +609,26 @@ CA_fixed_thresholds_p.vector  <-
   ]
 
 
+<<<<<<< HEAD
+check.p.vector(CA_sess_p.vector, CA_sess_model)
+
+CA_sess_p.prior <- prior.p.dmc(
+  dists = rep("tnorm", length(CA_sess_p.vector)),
+  p1=CA_sess_p.vector,                           
+  p2=c(1,1,1,rep(1, 18), rep(2, 72)),
+  lower=c(0.1, 0,0, rep(0, 18), rep(NA, 72)),
+  upper=c(5,10, rep(Inf, length(CA_sess_p.vector)-2))
+)
+
+CA_sess_dm <- data.model.dmc(cleandats,
+                            CA_sess_model)
+
+CA_sess_samples <- h.samples.dmc(nmc = 180,
+                                CA_sess_p.prior,
+                                CA_sess_dm, thin=20)
+
+save(CA_sess_samples, file="CA_sess_samples.RData")
+=======
 check.p.vector(CA_fixed_thresholds_p.vector, CA_fixed_thresholds_model)
 
 CA_fixed_thresholds_p.prior <- prior.p.dmc(
@@ -1206,6 +1247,7 @@ auto_sym_samples <- h.samples.dmc(nmc = 180,
 save(auto_sym_samples, file="auto_sym_samples.RData")
 
 
+>>>>>>> 7b3829e497183ee3df41face34b70f3ebd63b375
 
 
 

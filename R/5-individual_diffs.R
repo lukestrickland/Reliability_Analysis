@@ -176,6 +176,24 @@ automation_effects <- function (currentsim) {
   
 }
 
+#
+library(dplyr)
+library(readxl)
+library(tidyverse)
+
+Auto_Trust_Scores <- read_csv("Auto_Trust_Scores.csv")
+
+Auto_Trust_Long <- Auto_Trust_Scores %>%  
+  pivot_longer(cols=starts_with("D"), 
+               names_to = c("Session", "Condition", "Q"),
+             names_pattern= "D(.)_(.)_Q(.)")
+
+p_trust_scores <- Auto_Trust_Long %>% group_by(Participant, Condition)%>% 
+  summarise(score=mean(value, na.rm=T))
+
+names(p_trust_scores)[1]<- "s"
+p_trust_scores$s <- as.character(p_trust_scores$s)
+
 #get list of participant data
 
 data<- get.hdata.dmc(CA_top_samples)
@@ -184,8 +202,27 @@ data<- get.hdata.dmc(CA_top_samples)
 
 for (i in unique(data$s)) {
   effects<- automation_effects(data[data$s==i,])
+  effects["s"] <- i
   if (i ==1) out <- effects else out <- rbind(out,effects)
 }
+
+out <- as.data.frame(
+  out) %>% 
+  left_join(p_trust_scores %>% filter(Condition=="H"), by="s")
+
+for(i in unique(cleandats$s)) {
+  print(i)
+  effects2 <- automation_effects(cleandats %>% filter(s==i))
+  effects2$s <- i
+  
+  if (i ==1) out2 <- effects2 else out2 <- rbind(out2,effects2)
+  
+}
+
+
+out <- as.data.frame(
+  out) %>% 
+  left_join(p_trust_scores %>% filter(Condition=="L"), by="s")
 
 #same functions as up above but cor.plausible function collapses all dimensions
 # before calculation
@@ -281,6 +318,35 @@ get_corplausible_MCI(CA_top_samples,
                      fun=excitation_corplausible_L,
                      cv=as.data.frame(out), 
                      p.name="L_benefit", n=24)
+
+
+
+
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=inhibition_corplausible_H,
+                     cv=as.data.frame(out), 
+                     p.name="score", n=24)
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=excitation_corplausible_H,
+                     cv=as.data.frame(out), 
+                     p.name="score", n=24)
+
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=inhibition_corplausible_L,
+                     cv=as.data.frame(out), 
+                     p.name="score", n=24)
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=excitation_corplausible_L,
+                     cv=as.data.frame(out), 
+                     p.name="score", n=24)
+
+
+
+
 
 
 

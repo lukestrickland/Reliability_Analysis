@@ -84,7 +84,7 @@ accs$cond <- factor(accs$cond, levels=c("M", "L", "H"), labels =
                       c("Manual", "Low Reliability", "High Reliability"))
 
 accs$failtrial <- factor(accs$failtrial, levels=c("nonf", "fail"), labels =
-                      c("Automation Success", "Automation Failure"))
+                      c("Automation Correct", "Automation Incorrect"))
 
 plot1 <- ggplot.RP.dmc(accs, xaxis="cond") +xlab("") +ylab("Accuracy")
 
@@ -94,7 +94,7 @@ corRTs$cond <- factor(corRTs$cond, levels=c("M", "L", "H"), labels =
                       c("Manual", "Low Reliability", "High Reliability"))
 
 corRTs$failtrial <- factor(corRTs$failtrial, levels=c("nonf", "fail"), labels =
-                      c("Automation Success", "Automation Failure"))
+                      c("Automation Correct", "Automation Incorrect"))
 
 plot2 <- ggplot.RT.dmc(corRTs, xaxis="cond") +xlab("") +ylab("Correct RT")
 
@@ -106,7 +106,7 @@ errRTs$cond <- factor(errRTs$cond, levels=c("M", "L", "H"), labels =
                       c("Manual", "Low Reliability", "High Reliability"))
 
 errRTs$failtrial <- factor(errRTs$failtrial, levels=c("nonf", "fail"), labels =
-                      c("Automation Success", "Automation Failure"))
+                      c("Automation Correct", "Automation Incorrect"))
 
 plot3 <- ggplot.RT.dmc(errRTs, xaxis="cond") +xlab("") +ylab("Error RT")
 

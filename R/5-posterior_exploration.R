@@ -3,6 +3,7 @@ source("dmc/dmc_extras.R")
 load_model ("LBA","lba_B.R")
 load("samples_data/CA_top_samples.RData")
 theme_set(theme_simple())
+
 load("samples_data/CA_top_samples_pp.RData")
 
 options(dplyr.summarise.inform = FALSE)
@@ -66,6 +67,15 @@ load("samples_data/no_ex.RData")
 
 load("samples_data/no_inh.RData")
 
+
+tmp <- 1:24
+tmp <- tmp[!tmp==4]
+full_balance <- c(tmp, 28) 
+
+pp <- pp[names(pp) %in% full_balance]
+no_inh <- no_inh[names(no_inh) %in% full_balance]
+no_ex <- no_ex[names(no_ex) %in% full_balance]
+no_thres <- no_thres[names(no_thres) %in% full_balance]
 
 
 acc_effects <- function (currentsim) {

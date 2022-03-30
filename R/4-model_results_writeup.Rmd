@@ -24,7 +24,14 @@ library(pander)
 library(snowfall)
 options(digits=2)
 
-load("samples_data/CA_top_samples.RData")
+
+
+loadpath <- function(filenam) {
+  path <- "C:/Users/282952E/Dropbox/fits/Reliability_Analysis/"
+  load(paste0(path, filenam), env=parent.frame())
+}
+
+loadpath("CA_top_samples.RData")
 
 
 
@@ -50,7 +57,7 @@ load("samples_data/CA_top_samples.RData")
 # save(pp, pp1,
 #      file="samples_data/CA_top_samples_pp.RData")
 
-load("samples_data/CA_top_samples_pp.RData")
+loadpath("CA_top_samples_pp.RData")
 
 tmp <- 1:24
 tmp <- tmp[!tmp==4]
@@ -132,7 +139,7 @@ grid.arrange(plot1,plot2,plot3)
 # 
 
 
-load("samples_data/msds_top_samples.RData")
+loadpath("msds_top_samples.RData")
 
 paste.msd <- function(x) paste(signif(x["M"],2), "(", 
                                signif(x["SD"],2), ")", sep="")

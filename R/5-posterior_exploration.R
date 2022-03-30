@@ -1,10 +1,18 @@
 source("dmc/dmc.R")
 source("dmc/dmc_extras.R")
 load_model ("LBA","lba_B.R")
-load("samples_data/CA_top_samples.RData")
+
+
+
+loadpath <- function(filenam) {
+  path <- "C:/Users/282952E/Dropbox/fits/Reliability_Analysis/"
+  load(paste0(path, filenam), env=parent.frame())
+}
+
+loadpath("CA_top_samples.RData")
 theme_set(theme_simple())
 
-load("samples_data/CA_top_samples_pp.RData")
+loadpath("CA_top_samples_pp.RData")
 
 options(dplyr.summarise.inform = FALSE)
 
@@ -29,7 +37,7 @@ options(dplyr.summarise.inform = FALSE)
 # 
 # save(no_thres, file= "samples_data/no_thres.RData")
 
-load("samples_data/no_thres.RData")
+loadpath("no_thres.RData")
 
 # 
 # 
@@ -47,7 +55,7 @@ load("samples_data/no_thres.RData")
 # 
 # save(no_ex, file= "samples_data/no_ex.RData")
 
-load("samples_data/no_ex.RData")
+loadpath("no_ex.RData")
 
 # 
 # 
@@ -65,7 +73,7 @@ load("samples_data/no_ex.RData")
 # 
 # save(no_inh, file= "samples_data/no_inh.RData")
 
-load("samples_data/no_inh.RData")
+loadpath("no_inh.RData")
 
 
 tmp <- 1:24

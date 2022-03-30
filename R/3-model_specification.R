@@ -208,7 +208,7 @@ CA_top_thresholdsmult_model <- model.dmc(
     S = c("nn", "cc"), cond = c("H", "L", "M"), sess = c("1", "2", "3"),
     failtrial=c("nonf", "fail")
   ),
-  constants = c(st0 = 0, sd_v.false = 1
+  constants = c(st0 = 0, sd_v.false = 1, tb.MAN=1
   ),
   responses = c("N", "C"),type = "norm"
 )
@@ -245,8 +245,8 @@ check.p.vector(CA_top_thresholdsmult_p.vector, CA_top_thresholdsmult_model)
 CA_top_thresholdsmult_p.prior <- prior.p.dmc(
   dists = rep("tnorm", length(CA_top_thresholdsmult_p.vector)),
   p1=CA_top_thresholdsmult_p.vector,                           
-  p2=c(1,1,1,rep(1, 35), rep(2, 24)),
-  lower=c(0.1, 0,0, rep(0, 35), rep(NA, 24)),
+  p2=c(1,1,1,rep(1, 34), rep(2, 24)),
+  lower=c(0.1, 0,0, rep(0, 34), rep(NA, 24)),
   upper=c(5,10, rep(Inf, length(CA_top_thresholdsmult_p.vector)-2))
 )
 

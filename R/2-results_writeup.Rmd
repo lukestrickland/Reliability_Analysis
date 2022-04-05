@@ -3,7 +3,8 @@ title: "Automation Reliability in ATC: Mixed Model Analyses"
 author: "ljgs"
 date: "20/09/2021"
 output:
-  word_document: default
+  word_document:
+    reference_docx: ../assets/apa.docx
   pdf_document: default
   html_document: default
 ---
@@ -12,11 +13,11 @@ by Luke Strickland
 ```{r load_packages_and_data, echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
 
 
-library(dplyr)
-library(tidyr)
+library(tidyverse)
 library(ggplot2)
 library(lme4)
 library(car)
+library(apa)
 # library(lsmeans)
 library(pander)
 options(digits=2)
@@ -121,7 +122,7 @@ acc_cap <- "*Figure 5.* Conflict detection accuracies. Each panel corresponds to
 ```
 
 
-```{r response_accuracy_graph, echo= FALSE, message=FALSE, warning=FALSE,fig.height = 8, fig.width = 13,fig.cap=acc_cap}
+```{r response_accuracy_graph, echo= FALSE, message=FALSE, warning=FALSE,fig.height = 4, fig.width = 10,fig.cap=acc_cap}
 mean_accs <- accs %>% group_by(Stimulus, Condition, Automation) %>%
   summarise(meanacc=mean(acc))
 
@@ -136,13 +137,17 @@ plot.df$Automation <- factor(plot.df$Automation,
                              levels=c("Automation Success", "Automation Failure"),
                              labels= c("Automation Correct", "Automation Incorrect"))
 
+plot.df$Condition <- factor(plot.df$Condition, 
+                             levels=c("Manual", "Automation_Low", "Automation_High"),
+                             labels= c("Manual", "Low Reliability", "High Reliability"))
+
 ggplot(plot.df, aes(Automation, meanacc)) +geom_point(aes(col=Condition, shape=Condition), size=3)  + 
   facet_grid(.~Stimulus) + geom_errorbar(aes(
     ymax = meanacc + seacc,
     ymin = meanacc - seacc,
     colour = Condition, width = 0.3
   )) +ylab ("Accuracy") +xlab("") +
-    theme(text = element_text(size = 21))
+    theme(text = element_text(size = 16))
 
 ```
 
@@ -192,7 +197,7 @@ RT_cap <- "*Figure 6.* Correct conflict detection response times (RT). Each pane
 ```
 
 
-```{r response_RT_graph 1, echo= FALSE, message=FALSE, warning=FALSE,fig.height = 8, fig.width = 13,fig.cap=RT_cap}
+```{r response_RT_graph 1, echo= FALSE, message=FALSE, warning=FALSE,fig.height = 4, fig.width = 10,fig.cap=RT_cap}
 mean_RTs <- RTs %>% group_by(Stimulus, Condition, Automation) %>% summarise(meanRT=mean(RT))
 
 searr= se2(RTs, facs= c("Stimulus", "Condition", "Automation"), dvnam="RT", sfac="s")
@@ -207,6 +212,10 @@ plot.df$Automation <- factor(plot.df$Automation,
                              levels=c("Automation Success", "Automation Failure"),
                              labels= c("Automation Correct", "Automation Incorrect"))
 
+plot.df$Condition <- factor(plot.df$Condition, 
+                             levels=c("Manual", "Automation_Low", "Automation_High"),
+                             labels= c("Manual", "Low Reliability", "High Reliability"))
+
 ggplot(plot.df, aes(Automation, meanRT)) +geom_point(aes(col=Condition, shape=Condition), size=3)  + 
    ylab("Mean RT")+ xlab("") +
   facet_grid(.~Stimulus) + geom_errorbar(aes(
@@ -214,7 +223,7 @@ ggplot(plot.df, aes(Automation, meanRT)) +geom_point(aes(col=Condition, shape=Co
     ymin = meanRT - seRT,
     colour = Condition, width = 0.3
   ))  +
-    theme(text = element_text(size = 21))
+    theme(text = element_text(size = 16))
 ```
 ```{r, echo= FALSE, include=FALSE}
 specialdats <- cleandats
@@ -308,21 +317,41 @@ L_mRTs_failure_effect <- mRTs %>% group_by(s) %>%
 H_cor_accinacc <- cor.test(H_accs_success_effect$accboost,
                            H_accs_failure_effect$accboost)
 
+H_cor_RTinRT <- cor.test(H_mRTs_success_effect$mRTboost,
+                           H_mRTs_failure_effect$mRTboost)
+
 H_cor_accMRTsucc <- cor.test(H_accs_success_effect$accboost,
+                             H_mRTs_success_effect$mRTboost)
+
+H_cor_accdropMRTsucc <- cor.test(H_accs_failure_effect$accboost,
                              H_mRTs_success_effect$mRTboost)
 
 H_cor_accMRTfail <- cor.test(H_accs_success_effect$accboost,
                              H_mRTs_failure_effect$mRTboost)
+
+H_cor_accdropMRTfail <- cor.test(H_accs_failure_effect$accboost,
+                             H_mRTs_failure_effect$mRTboost)
+
 
 
 
 L_cor_accinacc <- cor.test(L_accs_success_effect$accboost,
                            L_accs_failure_effect$accboost)
 
+L_cor_RTinRT <- cor.test(L_mRTs_success_effect$mRTboost,
+                           L_mRTs_failure_effect$mRTboost)
+
 L_cor_accMRTsucc <- cor.test(L_accs_success_effect$accboost,
                              L_mRTs_success_effect$mRTboost)
 
+L_cor_accdropMRTsucc <- cor.test(L_accs_failure_effect$accboost,
+                             L_mRTs_success_effect$mRTboost)
+
 L_cor_accMRTfail <- cor.test(L_accs_success_effect$accboost,
+                             L_mRTs_failure_effect$mRTboost)
+
+
+L_cor_accdropMRTfail <- cor.test(L_accs_failure_effect$accboost,
                              L_mRTs_failure_effect$mRTboost)
 
 
@@ -343,6 +372,17 @@ cor.test(L_mRTs_failure_effect$mRTboost,
 
 
 ```
+
+
+##### Individual Differences
+Our study focused on high trial numbers, rather than participant numbers, and so has limited power to examine individual differences. Nonetheless, we performed
+exploratory analysis to examine the relationship between different effects of automation including the accuracy benefits of correct advice (automation condition accuracy - matched manual trials), the accuracy costs of incorrect advice (matched manual accuracy - automation condition accuracy), the RT benefits of correct automated advice (manual RT - automation condition RT) and the RT costs of incorrect advice (automation condition RT - matched manual trial RT).
+
+We found that the accuracy benefits of correct decision aids were correlated with the accuracy costs 
+of incorrect decision aids for both the high-reliability conditio, `r cor_apa(H_cor_accinacc, format = "markdown", print = FALSE)`, and the low-reliability automation condition, `r cor_apa(L_cor_accinacc, format = "markdown", print = FALSE)`. RT benefits of correct automated advice were not correlated with RT costs in the high-reliability condition, `r cor_apa(H_cor_RTinRT, format = "markdown", print = FALSE)`, but were in the low-reliability condition, `r cor_apa(L_cor_RTinRT, format = "markdown", print = FALSE)`. 
+
+The extent to which correct automated advice benefited RT was correlated with accuracy benefits in the high-reliability condition, `r cor_apa(H_cor_accMRTsucc, format = "markdown", print = FALSE)`, but not the low-reliability condition, `r cor_apa(L_cor_accMRTsucc , format = "markdown", print = FALSE)`. Similarly, the benefits to RT of correct automated advice correlated with the accuracy costs of incorrect advice in the high-reliability automation condition, `r cor_apa(H_cor_accdropMRTsucc, format = "markdown", print = FALSE)`, but not the low-reliability condition, `r cor_apa(L_cor_accdropMRTsucc, format = "markdown", print = FALSE)`. Conversely, the costs to RT of incorrect automated advice correlated with costs to accuracy in the low-reliability condition, `r cor_apa(L_cor_accdropMRTfail, format = "markdown", print = FALSE)`, but not the high-reliability condition, `r cor_apa(H_cor_accdropMRTfail, format = "markdown", print = FALSE)`.
+
 
 
 
@@ -369,14 +409,14 @@ p_trust_scores$s <- as.character(p_trust_scores$s)
 p_scores_autoboost <- p_trust_scores %>% filter(Condition=="H") %>% 
   right_join(H_accs_success_effect, by="s")
 
-cor.test(p_scores_autoboost$score, p_scores_autoboost$accboost)
+H_success_effect_trust <- cor.test(p_scores_autoboost$score, p_scores_autoboost$accboost)
 
 
 
 p_scores_autoboost <- p_trust_scores %>% filter(Condition=="H") %>% 
   right_join(H_accs_failure_effect, by="s")
 
-cor.test(p_scores_autoboost$score, p_scores_autoboost$accboost)
+H_failure_effect_trust <-cor.test(p_scores_autoboost$score, p_scores_autoboost$accboost)
 
 
 
@@ -384,13 +424,13 @@ cor.test(p_scores_autoboost$score, p_scores_autoboost$accboost)
 p_scores_autoboost <- p_trust_scores %>% filter(Condition=="L") %>% 
   right_join(L_accs_success_effect, by="s")
 
-cor.test(p_scores_autoboost$score, p_scores_autoboost$accboost)
+L_success_effect_trust <- cor.test(p_scores_autoboost$score, p_scores_autoboost$accboost)
 
 
 p_scores_autoboost <- p_trust_scores %>% filter(Condition=="L") %>% 
   right_join(L_accs_failure_effect, by="s")
 
-cor.test(p_scores_autoboost$score, p_scores_autoboost$accboost)
+L_failure_effect_trust <-cor.test(p_scores_autoboost$score, p_scores_autoboost$accboost)
 
 
 
@@ -399,14 +439,14 @@ cor.test(p_scores_autoboost$score, p_scores_autoboost$accboost)
 p_scores_autoboost <- p_trust_scores %>% filter(Condition=="H") %>% 
   right_join(H_mRTs_success_effect, by="s")
 
-cor.test(p_scores_autoboost$score, p_scores_autoboost$mRTboost)
+H_success_effect_RT_trust <-cor.test(p_scores_autoboost$score, p_scores_autoboost$mRTboost)
 
 
 
 p_scores_autoboost <- p_trust_scores %>% filter(Condition=="H") %>% 
   right_join(H_mRTs_failure_effect, by="s")
 
-cor.test(p_scores_autoboost$score, p_scores_autoboost$mRTboost)
+H_failure_effect_RT_trust <- cor.test(p_scores_autoboost$score, p_scores_autoboost$mRTboost)
 
 
 
@@ -414,17 +454,25 @@ cor.test(p_scores_autoboost$score, p_scores_autoboost$mRTboost)
 p_scores_autoboost <- p_trust_scores %>% filter(Condition=="L") %>% 
   right_join(H_mRTs_success_effect, by="s")
 
-cor.test(p_scores_autoboost$score, p_scores_autoboost$mRTboost)
+L_success_effect_RT_trust <-cor.test(p_scores_autoboost$score, p_scores_autoboost$mRTboost)
 
 
 
 p_scores_autoboost <- p_trust_scores %>% filter(Condition=="L") %>% 
   right_join(H_mRTs_failure_effect, by="s")
 
-cor.test(p_scores_autoboost$score, p_scores_autoboost$mRTboost)
+L_failure_effect_RT_trust <-cor.test(p_scores_autoboost$score, p_scores_autoboost$mRTboost)
 
 
 
 
 
 ```
+
+
+We also explored correlations between the effects of automation and trust in 
+automation scores in each condition. In the high-reliability condition, trust in
+automation was correlated both with the benefits of correct automated decision aids, `r cor_apa(H_success_effect_trust, format = "markdown", print = FALSE)`, 
+and the costs of incorrect decision aids, `r cor_apa(H_failure_effect_trust, format = "markdown", print = FALSE)`. In contrast, in the low-reliability condition it was correlated with neither the benefits
+of correct decision aids,`r cor_apa(L_success_effect_trust, format = "markdown", print = FALSE)`, nor the cost of incorrect decision aids,`r cor_apa(L_failure_effect_trust, format = "markdown", print = FALSE)`. The benefits of correct automation to RT were not correlated with trust in either
+the high-reliability ,`r cor_apa(H_success_effect_RT_trust, format = "markdown", print = FALSE)`, or low-reliability automation conditions,`r cor_apa(L_success_effect_RT_trust, format = "markdown", print = FALSE)`. The costs of incorrect automation to RT were not correlated with trust in the high-reliability condition, `r cor_apa(H_failure_effect_RT_trust, format = "markdown", print = FALSE)`, but were in the low-reliability condition, `r cor_apa(L_failure_effect_RT_trust, format = "markdown", print = FALSE)`. 

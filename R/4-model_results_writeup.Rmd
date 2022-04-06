@@ -3,7 +3,8 @@ title: "Automation Failures in ATC: Standard Results"
 author: "ljgs"
 date: "20/11/2019"
 output:
-  word_document: default
+  word_document:
+    reference_docx: ../assets/apa.docx
   pdf_document: default
   html_document: default
 ---
@@ -25,6 +26,7 @@ library(snowfall)
 options(digits=2)
 
 
+path <- "C:/Users/282952E/Dropbox/fits/Reliability_Analysis/"
 
 loadpath <- function(filenam) {
   path <- "C:/Users/282952E/Dropbox/fits/Reliability_Analysis/"
@@ -65,10 +67,11 @@ full_balance <- c(tmp, 28)
 
 CA_top_samples <- CA_top_samples[names(CA_top_samples) %in% full_balance]
 pp1 <- pp1[names(pp1) %in% full_balance]
+# 
+# fitlist <- GET.fitgglist.dmc(pp1, factors=c("cond", "failtrial"))
+# save(fitlist, file=paste0(path, "fitlist.RData"))
 
-fitlist <- GET.fitgglist.dmc(pp1, factors=c("cond", "failtrial"))
-
-
+loadpath("fitlist.RData")
 
 ```
 
@@ -139,7 +142,7 @@ grid.arrange(plot1,plot2,plot3)
 # 
 
 
-loadpath("msds_top_samples.RData")
+loadpath("msds_top_samples_balance.RData")
 
 paste.msd <- function(x) paste(signif(x["M"],2), "(", 
                                signif(x["SD"],2), ")", sep="")
@@ -308,15 +311,17 @@ L_nonconf_inh_success <- zandp(CA_top_samples,
 
 
 inhextab <- rbind(
+  c("", "", "", ""),
   c(L_conf_ex_success, L_conf_inh_success, H_conf_ex_success, H_conf_inh_success),
   c(L_conf_ex_fail, L_conf_inh_fail, H_conf_ex_fail, H_conf_inh_fail),
-  c(L_conf_ex_success, L_nonconf_inh_success, H_conf_ex_success, H_nonconf_inh_success),
-  c(L_conf_ex_fail, L_nonconf_inh_fail, H_conf_ex_fail, H_nonconf_inh_fail)
+  c("", "", "", ""),
+  c(L_nonconf_ex_success, L_nonconf_inh_success, H_conf_ex_success, H_nonconf_inh_success),
+  c(L_nonconf_ex_fail, L_nonconf_inh_fail, H_conf_ex_fail, H_nonconf_inh_fail)
   
       )
 
-rownames(inhextab) <- c("Conflict Automation Success", "Conflict Automation Failure",
-                        "Non-conflict Automation Success", "Non-conflict Automation Failure")
+rownames(inhextab) <- c("Conflict Trials", "Automation Correct", "Automation Incorrect",
+                        "Non-conflict Trials", "Automation Correct", "Automation Incorrect")
 colnames(inhextab) <- c("Excitation (L)", "Inhibition (L)", "Excitation (H)", "Inhibition (H)")
 
 pandoc.table(inhextab)

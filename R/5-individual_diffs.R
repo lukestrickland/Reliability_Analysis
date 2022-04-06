@@ -3,6 +3,15 @@ source("dmc/dmc_extras.R")
 load("samples_data/CA_top_samples.RData")
 load_model("LBA", "lba_B.R")
 
+
+path <- "C:/Users/282952E/Dropbox/fits/Reliability_Analysis/"
+
+loadpath <- function(filenam) {
+  path <- "C:/Users/282952E/Dropbox/fits/Reliability_Analysis/"
+  load(paste0(path, filenam), env=parent.frame())
+}
+
+
 tmp <- 1:24
 tmp <- tmp[!tmp==4]
 full_balance <- c(tmp, 28) 
@@ -298,6 +307,12 @@ get_corplausible_MCI <- function(samples, cv, p.name, n, fun, kappa=1){
   MCIs
 }
 
+out$H_benefit <- as.numeric(out$H_benefit)
+out$H_cost <- as.numeric(out$H_cost)
+
+out$L_benefit <- as.numeric(out$L_benefit)
+out$L_cost <- as.numeric(out$L_cost)
+
 get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_H,
                      cv=as.data.frame(out), 
@@ -307,6 +322,8 @@ get_corplausible_MCI(CA_top_samples,
                      fun=excitation_corplausible_H,
                      cv=as.data.frame(out), 
                      p.name="H_benefit", n=24)
+
+
 
 
 get_corplausible_MCI(CA_top_samples, 
@@ -326,25 +343,24 @@ get_corplausible_MCI(CA_top_samples,
 get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_H,
                      cv=as.data.frame(out), 
-                     p.name="score", n=24)
+                     p.name="H_cost", n=24)
 
 get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_H,
                      cv=as.data.frame(out), 
-                     p.name="score", n=24)
+                     p.name="H_cost", n=24)
+
 
 
 get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_L,
                      cv=as.data.frame(out), 
-                     p.name="score", n=24)
+                     p.name="L_cost", n=24)
 
 get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_L,
                      cv=as.data.frame(out), 
-                     p.name="score", n=24)
-
-
+                     p.name="L_cost", n=24)
 
 
 
@@ -354,30 +370,46 @@ get_corplausible_MCI(CA_top_samples,
 get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_H,
                      cv=as.data.frame(out), 
-                     p.name="H_cost", n=24)
+                     p.name="score.x", n=24)
 
 get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_H,
                      cv=as.data.frame(out), 
-                     p.name="H_cost", n=24)
+                     p.name="score.x", n=24)
 
 
 get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_L,
                      cv=as.data.frame(out), 
-                     p.name="L_cost", n=24)
+                     p.name="score.y", n=24)
 
 get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_L,
                      cv=as.data.frame(out), 
-                     p.name="L_cost", n=24)
+                     p.name="score.y", n=24)
 
 
 
 
 
-load("samples_data/CA_top_samples_pp.RData")
-load("samples_data/postexp.RData")
+
+loadpath("CA_top_samples_pp.RData")
+
+
+
+
+
+
+options(dplyr.summarise.inform = FALSE)
+
+loadpath("CA_top_samples_pp.RData")
+loadpath("no_thres.RData")
+loadpath("no_ex.RData")
+loadpath("no_inh.RData")
+
+
+
+
 
 subject_postexp<- get.subj.effects.m(list(pp, no_inh, no_ex, no_thres), automation_effects , 
                           c("Full Model", "Inhibition Removed", "Excitation Removed", "Fixed Thresholds"))

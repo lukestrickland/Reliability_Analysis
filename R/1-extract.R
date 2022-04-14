@@ -27,7 +27,7 @@ for(i in 1:length(xml_files)){
 }
 
 dats <- full_df[, c("ppt", "sess", "block", "cond", "stimulus",
-                    "failtrial",
+                    "failtrial", "failtrial_H",
                     "response", "rkey", "RT", "score", 
                     "cumulative_score")]
 
@@ -83,7 +83,7 @@ cleandats$block <- factor(cleandats$block, levels=c("1", "2", "3"),
 colnames(cleandats)[colnames(cleandats)=='ppt'] <- 's'
 colnames(cleandats)[colnames(cleandats)=='stimulus'] <- 'S'
 cleandats <- cleandats[,c("s", "sess", "block", "cond",
-                          "failtrial", "trialnum", "S", "R", "RT")]
+                          "failtrial", "failtrial_H", "trialnum", "S", "R", "RT")]
 
 cleandats$RT <- cleandats$RT/1000
 

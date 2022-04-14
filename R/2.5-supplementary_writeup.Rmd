@@ -15,7 +15,7 @@ library(dplyr)
 library(ggplot2)
 library(lme4)
 library(car)
-library(lsmeans)
+# library(lsmeans)
 library(gridExtra)
 library(pander)
 options(digits=2)
@@ -59,6 +59,57 @@ accs <-
 RTs <- cleandats %>% group_by(s, Stimulus, Condition, Automation, Session) %>% 
   filter(C) %>% 
   summarise(RT=mean(RT))%>% arrange(Automation)
+
+
+```
+
+
+
+```{r check_failtrial_H, echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
+
+checkman <- cleandats %>% filter(Condition=="Manual")
+
+checkman$fails <- ifelse(checkman$Automation=="Automation Success",
+                         "Succ",
+                         "LFail")
+checkman$fails[checkman$failtrial_H] <- "HFail"
+
+checkman_glmer <-
+  glmer(C ~ fails + (1 |s),
+        data = checkman %>% filter(fails!="Succ"),
+        family = binomial(link = "probit"))
+
+Anova(checkman_glmer,type="II")
+
+checkman_glmer <-
+  glmer(C ~ fails*Stimulus*Session + (1 |s),
+        data = checkman %>% filter(fails!="Succ"),
+        family = binomial(link = "probit"))
+
+Anova(checkman_glmer,type="II")
+
+checkman_RTs <- checkman %>% filter(fails!="Succ") %>% 
+  group_by(s, fails) %>% 
+  filter(C) %>% 
+  summarise(RT=mean(RT))
+
+checkman_RT_lmer <- lmer(RT ~ fails + (1 |s),
+     data = checkman_RTs )
+
+Anova(checkman_RT_lmer, type="II")
+
+
+checkman_RTs <- checkman %>% filter(fails!="Succ") %>% 
+  group_by(s, fails, Stimulus, Session) %>% 
+  filter(C) %>% 
+  summarise(RT=mean(RT))
+
+checkman_RT_lmer <- lmer(RT ~ fails*Stimulus*Session + (1 |s),
+     data = checkman_RTs )
+
+Anova(checkman_RT_lmer, type="II")
+
+                                       
 
 
 ```
@@ -187,6 +238,30 @@ succeeded or failed. Tukey adjustments were applied to the included p-values.*
 summary_Condition_Automation_RT <- summary(contrast(emmeans(RT_model, specs=~Condition|Automation), method="pairwise"))
 
 make_contrast_table(summary_Condition_Automation_RT) 
+
+```
+
+
+```{r trust, echo= FALSE, message=FALSE, warning=FALSE, results="asis"}
+
+Auto_Trust_Scores <- read_csv("Auto_Trust_Scores.csv")
+
+Auto_Trust_Long <- Auto_Trust_Scores %>%  pivot_longer(cols=starts_with("D"), 
+               names_to = c("Session", "Condition", "Q"),
+               names_pattern=
+                 "D(.)_(.)_Q(.)")
+
+
+
+trust_scores_p <- Auto_Trust_Long %>% group_by(Participant, Session, Condition) %>% 
+  summarise(score=mean(value, na.rm=T))
+
+trust_lmer <- lmer(score ~ Condition * Session + (1 |Participant),
+     data = trust_scores_p )
+
+pandoc.table(
+  make_model_table(Anova(trust_lmer , type="II")))
+
 
 ```
 

@@ -11,7 +11,7 @@ by Luke Strickland
 
 ```{r load_packages_and_data, echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
 
-
+library(tidyverse)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -216,6 +216,40 @@ ggplot(plot.df, aes(Automation, meanRT)) +geom_point(aes(col=Condition, shape=Co
   ))  +
     theme(text = element_text(size = 21))
 ```
+
+
+
+```{r, echo= FALSE, include=FALSE}
+Auto_Trust_Scores <- read_csv("Auto_Trust_Scores.csv")
+
+Auto_Trust_Long <- Auto_Trust_Scores %>%  pivot_longer(cols=starts_with("D"), 
+               names_to = c("Session", "Condition", "Q"),
+               names_pattern=
+                 "D(.)_(.)_Q(.)")
+
+
+
+trust_scores_p <- Auto_Trust_Long %>% group_by(Participant, Session, Condition) %>% 
+  summarise(score=mean(value, na.rm=T))
+
+names(trust_scores_p)[1] <- "s"
+
+trust_cond <- trust_scores_p %>% group_by(Condition) %>% summarise(mean(score))
+trust_cond_SE <- se2(trust_scores_p, facs="Condition", dvnam="score")
+
+
+```
+
+##### Trust in Automation
+
+We analysed the effects of automation condition and session on average automation trust scores. Trust
+was higher in the high-reliability condition (*M* = `r trust_cond[trust_cond$Condition=="H",2]`,
+*SE* = `r trust_cond_SE["H"]`) 
+than the low-reliability condition  (*M* = `r trust_cond[trust_cond$Condition=="L",2]`,
+*SE* = `r trust_cond_SE["L"]`). The effect of 
+session, and its interaction with condition, did not reach significance. 
+
+
 ```{r, echo= FALSE, include=FALSE}
 specialdats <- cleandats
 specialdats$subjsesh <- interaction(cleandats$s, cleandats$Session)

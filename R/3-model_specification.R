@@ -1648,6 +1648,254 @@ save(CA_top_goodpriorstrongsamples, file="CA_top_goodpriorstrongsamples.RData")
 
 
 
+#Use previous study for prior for this study
+
+rm(list=ls())
+source("dmc/dmc.R")
+
+create_model_data <- function(file) {
+  load(file)
+  cleandats <- cleandats[!colnames(cleandats) %in% "C"]
+  cleandats <- as.data.frame(cleandats)
+  cleandats$cond <- factor(cleandats$cond, levels=c("AUTO_H","AUTO_L", "MANUAL"),
+                           labels=c("H", "L", "M"))
+  
+  cleandats$S <- factor(cleandats$S, levels=c("n", "c"),
+                        labels=c("nn", "cc"))
+  
+  cleandats$R <- factor(cleandats$R, levels=c("N", "C"))
+  cleandats$s<- factor(cleandats$s)
+  cleandats
+}
+
+cleandats <- create_model_data("img/cleandats.RData")
+
+
+#Full classic LBA model of the experiment
+load_model("LBA", "lba_B.R")
+
+CA_top_strongpriort0svA_model <- model.dmc(
+  p.map = list(
+    A = "1",B = c("cond", "sess", "R"), t0 = "1", mean_v = c("S", "cond", "failtrial", "M"),
+    sd_v = c("M"), st0 = "1"),
+  match.map = list(
+    M = list(nn = "N", cc="C")
+  ),
+  factors = list(
+    S = c("nn", "cc"), cond = c("H", "L", "M"), sess = c("1", "2", "3"),
+    failtrial=c("nonf", "fail")
+  ),
+  constants = c(st0 = 0, sd_v.false = 1
+  ),
+  responses = c("N", "C"),type = "norm"
+)
+
+
+pnames <- attr(CA_top_strongpriort0svA_model, "p.vector")
+
+pnames[grep("A", names(pnames))] <- 2.53
+pnames[grep("B", names(pnames))] <- 2
+pnames[grep("t0", names(pnames))] <- 0.24
+pnames[grep("true", names(pnames))] <- 1
+pnames[grep("false", names(pnames))] <- 0
+
+
+CA_top_strongpriort0svA_p.vector  <- 
+  pnames[c(
+    names(pnames)[grep("t0", names(pnames))],
+    names(pnames)[grep("A", names(pnames))],
+    names(pnames)[grep("sd_v", names(pnames))],
+    names(pnames)[grep("B", names(pnames))],
+    #True rates, use grepl to avoid sd_v
+    names(pnames)[grep("true", names(pnames))][
+      !grepl("sd_v", names(pnames)[grep("true", names(pnames))])
+    ],
+    names(pnames)[grep("false", names(pnames))]
+    
+  )
+  ]
+
+CA_top_strongpriort0svA_p.vector[3] <- 0.79
+
+CA_top_strongpriort0svA_p.vector[4:21] <- c(1.71, 1.71, 1.71, 
+                                          1.23, 1.23, 1.23, 
+                                          1.23, 1.23, 1.23, 
+                                          2.07, 2.07, 2.07,
+                                          1.59, 1.59, 1.59,
+                                          1.59, 1.59, 1.59
+                                          
+                                          
+)
+
+CA_top_strongpriort0svA_p.vector[22:45] <- c(1.67, 1.63, 1.67, 1.63,1.67, 1.63,
+                                           1.67, 1.63, 1.67, 1.63,1.67, 1.63,
+                                           -0.61, -1.38,-0.61, -1.38,-0.61, -1.38,
+                                           -0.61, -1.38,-0.61, -1.38,-0.61, -1.38
+                                           
+                                           
+                                           
+)
+
+
+
+check.p.vector(CA_top_strongpriort0svA_p.vector, CA_top_strongpriort0svA_model)
+
+CA_top_strongpriort0svA_p.prior <- prior.p.dmc(
+  dists = rep("tnorm", length(CA_top_strongpriort0svA_p.vector)),
+  p1=CA_top_strongpriort0svA_p.vector,                           
+  p2=c(0.5,0.5,0.5,rep(1, 18), rep(2, 24)),
+  lower=c(0.1, 0,0, rep(0, 18), rep(NA, 24)),
+  upper=c(5,10, rep(Inf, length(CA_top_strongpriort0svA_p.vector)-2))
+)
+
+CA_top_strongpriort0svA_dm <- data.model.dmc(cleandats,
+                                           CA_top_strongpriort0svA_model)
+
+CA_top_strongpriort0svA_p.vector
+
+CA_top_strongpriort0svA_samples <- h.samples.dmc(nmc = 180,
+                                               CA_top_strongpriort0svA_p.prior,
+                                               CA_top_strongpriort0svA_dm, thin=20)
+
+CA_top_strongpriort0svA_p.vector
+
+save(CA_top_strongpriort0svA_samples, file="CA_top_strongpriort0svA_samples.RData")
+
+
+
+
+
+
+
+#Use previous study for prior for this study
+
+rm(list=ls())
+source("dmc/dmc.R")
+
+create_model_data <- function(file) {
+  load(file)
+  cleandats <- cleandats[!colnames(cleandats) %in% "C"]
+  cleandats <- as.data.frame(cleandats)
+  cleandats$cond <- factor(cleandats$cond, levels=c("AUTO_H","AUTO_L", "MANUAL"),
+                           labels=c("H", "L", "M"))
+  
+  cleandats$S <- factor(cleandats$S, levels=c("n", "c"),
+                        labels=c("nn", "cc"))
+  
+  cleandats$R <- factor(cleandats$R, levels=c("N", "C"))
+  cleandats$s<- factor(cleandats$s)
+  cleandats
+}
+
+cleandats <- create_model_data("img/cleandats.RData")
+
+
+#Full classic LBA model of the experiment
+load_model("LBA", "lba_B.R")
+
+CA_top_strongpriort0svAB_model <- model.dmc(
+  p.map = list(
+    A = "1",B = c("cond", "sess", "R"), t0 = "1", mean_v = c("S", "cond", "failtrial", "M"),
+    sd_v = c("M"), st0 = "1"),
+  match.map = list(
+    M = list(nn = "N", cc="C")
+  ),
+  factors = list(
+    S = c("nn", "cc"), cond = c("H", "L", "M"), sess = c("1", "2", "3"),
+    failtrial=c("nonf", "fail")
+  ),
+  constants = c(st0 = 0, sd_v.false = 1
+  ),
+  responses = c("N", "C"),type = "norm"
+)
+
+
+pnames <- attr(CA_top_strongpriort0svAB_model, "p.vector")
+
+pnames[grep("A", names(pnames))] <- 2.53
+pnames[grep("B", names(pnames))] <- 2
+pnames[grep("t0", names(pnames))] <- 0.24
+pnames[grep("true", names(pnames))] <- 1
+pnames[grep("false", names(pnames))] <- 0
+
+
+CA_top_strongpriort0svAB_p.vector  <- 
+  pnames[c(
+    names(pnames)[grep("t0", names(pnames))],
+    names(pnames)[grep("A", names(pnames))],
+    names(pnames)[grep("sd_v", names(pnames))],
+    names(pnames)[grep("B", names(pnames))],
+    #True rates, use grepl to avoid sd_v
+    names(pnames)[grep("true", names(pnames))][
+      !grepl("sd_v", names(pnames)[grep("true", names(pnames))])
+    ],
+    names(pnames)[grep("false", names(pnames))]
+    
+  )
+  ]
+
+CA_top_strongpriort0svAB_p.vector[3] <- 0.79
+
+CA_top_strongpriort0svAB_p.vector[4:21] <- c(1.71, 1.71, 1.71, 
+                                            1.23, 1.23, 1.23, 
+                                            1.23, 1.23, 1.23, 
+                                            2.07, 2.07, 2.07,
+                                            1.59, 1.59, 1.59,
+                                            1.59, 1.59, 1.59
+                                            
+                                            
+)
+
+CA_top_strongpriort0svAB_p.vector[22:45] <- c(1.67, 1.63, 1.67, 1.63,1.67, 1.63,
+                                             1.67, 1.63, 1.67, 1.63,1.67, 1.63,
+                                             -0.61, -1.38,-0.61, -1.38,-0.61, -1.38,
+                                             -0.61, -1.38,-0.61, -1.38,-0.61, -1.38
+                                             
+                                             
+                                             
+)
+
+
+
+check.p.vector(CA_top_strongpriort0svAB_p.vector, CA_top_strongpriort0svAB_model)
+
+CA_top_strongpriort0svAB_p.prior <- prior.p.dmc(
+  dists = rep("tnorm", length(CA_top_strongpriort0svAB_p.vector)),
+  p1=CA_top_strongpriort0svAB_p.vector,                           
+  p2=c(0.5,0.5,0.5,rep(0.5, 18), rep(2, 24)),
+  lower=c(0.1, 0,0, rep(0, 18), rep(NA, 24)),
+  upper=c(5,10, rep(Inf, length(CA_top_strongpriort0svAB_p.vector)-2))
+)
+
+CA_top_strongpriort0svAB_dm <- data.model.dmc(cleandats,
+                                             CA_top_strongpriort0svAB_model)
+
+CA_top_strongpriort0svAB_p.vector
+
+CA_top_strongpriort0svAB_samples <- h.samples.dmc(nmc = 180,
+                                                 CA_top_strongpriort0svAB_p.prior,
+                                                 CA_top_strongpriort0svAB_dm, thin=20)
+
+CA_top_strongpriort0svAB_p.vector
+
+save(CA_top_strongpriort0svAB_samples, file="CA_top_strongpriort0svAB_samples.RData")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

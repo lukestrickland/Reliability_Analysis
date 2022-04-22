@@ -5,9 +5,12 @@ load_model ("LBA","lba_B.R")
 
 
 loadpath <- function(filenam) {
-  path <- "C:/Users/282952E/Dropbox/fits/Reliability_Analysis/"
+  # path <- "C:/Users/282952E/Dropbox/fits/Reliability_Analysis/"
+  path <- "D:/Dropbox/fits/Reliability_Analysis/"
   load(paste0(path, filenam), env=parent.frame())
 }
+
+
 
 loadpath("CA_top_samples.RData")
 theme_set(theme_simple())

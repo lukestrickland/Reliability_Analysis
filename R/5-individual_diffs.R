@@ -3,6 +3,15 @@ source("dmc/dmc_extras.R")
 load("samples_data/CA_top_samples.RData")
 load_model("LBA", "lba_B.R")
 
+
+path <- "C:/Users/282952E/Dropbox/fits/Reliability_Analysis/"
+
+loadpath <- function(filenam) {
+  path <- "C:/Users/282952E/Dropbox/fits/Reliability_Analysis/"
+  load(paste0(path, filenam), env=parent.frame())
+}
+
+
 tmp <- 1:24
 tmp <- tmp[!tmp==4]
 full_balance <- c(tmp, 28) 
@@ -202,6 +211,7 @@ data<- get.hdata.dmc(CA_top_samples)
 
 for (i in unique(data$s)) {
   effects<- automation_effects(data[data$s==i,])
+  # browser()
   effects["s"] <- i
   if (i ==1) out <- effects else out <- rbind(out,effects)
 }
@@ -298,6 +308,12 @@ get_corplausible_MCI <- function(samples, cv, p.name, n, fun, kappa=1){
   MCIs
 }
 
+out$H_benefit <- as.numeric(out$H_benefit)
+out$H_cost <- as.numeric(out$H_cost)
+
+out$L_benefit <- as.numeric(out$L_benefit)
+out$L_cost <- as.numeric(out$L_cost)
+
 get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_H,
                      cv=as.data.frame(out), 
@@ -307,6 +323,8 @@ get_corplausible_MCI(CA_top_samples,
                      fun=excitation_corplausible_H,
                      cv=as.data.frame(out), 
                      p.name="H_benefit", n=24)
+
+
 
 
 get_corplausible_MCI(CA_top_samples, 
@@ -326,26 +344,242 @@ get_corplausible_MCI(CA_top_samples,
 get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_H,
                      cv=as.data.frame(out), 
-                     p.name="score", n=24)
+                     p.name="H_cost", n=24)
 
 get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_H,
                      cv=as.data.frame(out), 
-                     p.name="score", n=24)
+                     p.name="H_cost", n=24)
+
 
 
 get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_L,
                      cv=as.data.frame(out), 
-                     p.name="score", n=24)
+                     p.name="L_cost", n=24)
 
 get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_L,
                      cv=as.data.frame(out), 
-                     p.name="score", n=24)
+                     p.name="L_cost", n=24)
 
 
 
+
+
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=inhibition_corplausible_H,
+                     cv=as.data.frame(out), 
+                     p.name="score.x", n=24)
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=excitation_corplausible_H,
+                     cv=as.data.frame(out), 
+                     p.name="score.x", n=24)
+
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=inhibition_corplausible_L,
+                     cv=as.data.frame(out), 
+                     p.name="score.y", n=24)
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=excitation_corplausible_L,
+                     cv=as.data.frame(out), 
+                     p.name="score.y", n=24)
+
+
+
+
+
+#same thing but with RT effects
+
+
+
+
+automation_effects <- function (currentsim) {
+  
+  H_nonf_decrease <- NA; L_nonf_decrease <- NA;
+  H_fail_increase <- NA; L_fail_increase <- NA;
+  
+  RT_tibble <- currentsim %>% filter(toupper(substr(S,1,1))==R) %>%
+    group_by(failtrial, cond) %>% 
+    summarise(RT= mean(RT))
+  
+  H_nonf_decrease <- RT_tibble$RT[RT_tibble$failtrial=="nonf" & RT_tibble$cond=="M"] -
+    RT_tibble$RT[RT_tibble$failtrial=="nonf" & RT_tibble$cond=="H"]
+  
+  L_nonf_decrease <- RT_tibble$RT[RT_tibble$failtrial=="nonf" & RT_tibble$cond=="M"] -
+    RT_tibble$RT[RT_tibble$failtrial=="nonf" & RT_tibble$cond=="L"]
+  
+  H_fail_increase <- RT_tibble$RT[RT_tibble$failtrial=="fail" & RT_tibble$cond=="H"] -
+    RT_tibble$RT[RT_tibble$failtrial=="fail" & RT_tibble$cond=="M"]
+  
+  L_fail_increase <- RT_tibble$RT[RT_tibble$failtrial=="fail" & RT_tibble$cond=="L"] -
+    RT_tibble$RT[RT_tibble$failtrial=="fail" & RT_tibble$cond=="M"]
+  
+  
+  out <- c(H_nonf_decrease, L_nonf_decrease, H_fail_increase, L_fail_increase)
+  
+  names(out) <- c(
+    "H_benefit", "L_benefit", "H_cost", "L_cost"
+  )
+  
+  out
+  
+}
+
+#
+library(dplyr)
+library(readxl)
+library(tidyverse)
+
+Auto_Trust_Scores <- read_csv("Auto_Trust_Scores.csv")
+
+Auto_Trust_Long <- Auto_Trust_Scores %>%  
+  pivot_longer(cols=starts_with("D"), 
+               names_to = c("Session", "Condition", "Q"),
+               names_pattern= "D(.)_(.)_Q(.)")
+
+p_trust_scores <- Auto_Trust_Long %>% group_by(Participant, Condition)%>% 
+  summarise(score=mean(value, na.rm=T))
+
+names(p_trust_scores)[1]<- "s"
+p_trust_scores$s <- as.character(p_trust_scores$s)
+
+#get list of participant data
+
+data<- get.hdata.dmc(CA_top_samples)
+
+#make data frame containing relevant effects
+
+for (i in unique(data$s)) {
+  effects<- automation_effects(data[data$s==i,])
+  effects["s"] <- i
+  if (i ==1) out <- effects else out <- rbind(out,effects)
+}
+
+out <- as.data.frame(
+  out) %>% 
+  left_join(p_trust_scores %>% filter(Condition=="H"), by="s")
+
+for(i in unique(cleandats$s)) {
+  print(i)
+  effects2 <- automation_effects(cleandats %>% filter(s==i))
+  effects2$s <- i
+  
+  if (i ==1) out2 <- effects2 else out2 <- rbind(out2,effects2)
+  
+}
+
+
+out <- as.data.frame(
+  out) %>% 
+  left_join(p_trust_scores %>% filter(Condition=="L"), by="s")
+
+#same functions as up above but cor.plausible function collapses all dimensions
+# before calculation
+
+inhibition_corplausible_H <- function(x) (
+  (
+    #non-conflict, non-fail, false reduction   
+    (x["mean_v.nn.M.nonf.false"] - x["mean_v.nn.H.nonf.false"]) +
+      #non-conflict, fail, true reduction
+      (x["mean_v.nn.M.fail.true"] - x["mean_v.nn.H.fail.true"]) +
+      #conflict, non-fail, false reduction  
+      (x["mean_v.cc.M.nonf.false"] - x["mean_v.cc.H.nonf.false"]) +
+      #conflict, fail, true reduction
+      (x["mean_v.cc.M.fail.true"] - x["mean_v.cc.H.fail.true"]) 
+  )/4
+)
+
+
+excitation_corplausible_H <- function(x) (
+  (
+    #non-conflict non-fail true increase   
+    (x["mean_v.nn.H.nonf.true"] - x["mean_v.nn.M.nonf.true"]) +
+      #non-conflict fail false increase
+      (x["mean_v.nn.H.fail.false"] - x["mean_v.nn.M.fail.false"]) +
+      #conflict non-fail true increase
+      (x["mean_v.cc.H.nonf.true"] - x["mean_v.cc.M.nonf.true"]) +
+      #conflict fail false increase
+      (x["mean_v.cc.H.fail.false"] - x["mean_v.cc.M.fail.false"]) 
+  )/4
+)
+
+inhibition_corplausible_L <- function(x) (
+  (
+    #non-conflict, non-fail, false reduction   
+    (x["mean_v.nn.M.nonf.false"] - x["mean_v.nn.L.nonf.false"]) +
+      #non-conflict, fail, true reduction
+      (x["mean_v.nn.M.fail.true"] - x["mean_v.nn.L.fail.true"]) +
+      #conflict, non-fail, false reduction  
+      (x["mean_v.cc.M.nonf.false"] - x["mean_v.cc.L.nonf.false"]) +
+      #conflict, fail, true reduction
+      (x["mean_v.cc.M.fail.true"] - x["mean_v.cc.L.fail.true"]) 
+  )/4
+)
+
+
+excitation_corplausible_L <- function(x) (
+  (
+    #non-conflict non-fail true increase   
+    (x["mean_v.nn.L.nonf.true"] - x["mean_v.nn.M.nonf.true"]) +
+      #non-conflict fail false increase
+      (x["mean_v.nn.L.fail.false"] - x["mean_v.nn.M.fail.false"]) +
+      #conflict non-fail true increase
+      (x["mean_v.cc.L.nonf.true"] - x["mean_v.cc.M.nonf.true"]) +
+      #conflict fail false increase
+      (x["mean_v.cc.L.fail.false"] - x["mean_v.cc.M.fail.false"]) 
+  )/4
+)
+
+#See dmc tutorial "plausible" https://osf.io/pbwx8/
+
+
+#inhibition, costs and benefits
+
+get_corplausible_MCI <- function(samples, cv, p.name, n, fun, kappa=1){
+  
+  cor.r <- cor.plausible(samples,fun=fun,
+                         cv=cv, p.name=p.name)
+  
+  dens.r <- postRav(r=cor.r,n=n,spacing=.01,kappa=kappa) 
+  
+  MCIs <- c(postRav.mean(dens.r), postRav.ci(dens.r,interval=c(.025,.975)))
+  names(MCIs) <- c("M", "LCI", "HCI")
+  MCIs
+}
+
+out$H_benefit <- as.numeric(out$H_benefit)
+out$H_cost <- as.numeric(out$H_cost)
+
+out$L_benefit <- as.numeric(out$L_benefit)
+out$L_cost <- as.numeric(out$L_cost)
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=inhibition_corplausible_H,
+                     cv=as.data.frame(out), 
+                     p.name="H_benefit", n=24)
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=excitation_corplausible_H,
+                     cv=as.data.frame(out), 
+                     p.name="H_benefit", n=24)
+
+
+
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=inhibition_corplausible_L,
+                     cv=as.data.frame(out), 
+                     p.name="L_benefit", n=24)
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=excitation_corplausible_L,
+                     cv=as.data.frame(out), 
+                     p.name="L_benefit", n=24)
 
 
 
@@ -362,6 +596,7 @@ get_corplausible_MCI(CA_top_samples,
                      p.name="H_cost", n=24)
 
 
+
 get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_L,
                      cv=as.data.frame(out), 
@@ -376,8 +611,83 @@ get_corplausible_MCI(CA_top_samples,
 
 
 
-load("samples_data/CA_top_samples_pp.RData")
-load("samples_data/postexp.RData")
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=inhibition_corplausible_H,
+                     cv=as.data.frame(out), 
+                     p.name="score.x", n=24)
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=excitation_corplausible_H,
+                     cv=as.data.frame(out), 
+                     p.name="score.x", n=24)
+
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=inhibition_corplausible_L,
+                     cv=as.data.frame(out), 
+                     p.name="score.y", n=24)
+
+get_corplausible_MCI(CA_top_samples, 
+                     fun=excitation_corplausible_L,
+                     cv=as.data.frame(out), 
+                     p.name="score.y", n=24)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+loadpath("CA_top_samples_pp.RData")
+
+
+
+
+
+
+options(dplyr.summarise.inform = FALSE)
+
+loadpath("CA_top_samples_pp.RData")
+loadpath("no_thres.RData")
+loadpath("no_ex.RData")
+loadpath("no_inh.RData")
+
+
+
+
 
 subject_postexp<- get.subj.effects.m(list(pp, no_inh, no_ex, no_thres), automation_effects , 
                           c("Full Model", "Inhibition Removed", "Excitation Removed", "Fixed Thresholds"))

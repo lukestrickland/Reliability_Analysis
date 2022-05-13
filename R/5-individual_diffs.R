@@ -1,16 +1,17 @@
+rm(list=ls())
 source("dmc/dmc.R")
 source("dmc/dmc_extras.R")
 load("samples_data/CA_top_samples.RData")
 load_model("LBA", "lba_B.R")
 
 
-path <- "C:/Users/282952E/Dropbox/fits/Reliability_Analysis/"
+fitpath <- file.path(set_fit_path(), "Reliability_Analysis")
+loadpath <- create_loadpath(fitpath)
+savepath <- create_savepath(fitpath)
 
-loadpath <- function(filenam) {
-  path <- "C:/Users/282952E/Dropbox/fits/Reliability_Analysis/"
-  load(paste0(path, filenam), env=parent.frame())
-}
+loadpath("CA_top_samples_A_lb_final.RData")
 
+CA_top_samples <- CA_top_samples_A_lb
 
 tmp <- 1:24
 tmp <- tmp[!tmp==4]
@@ -220,14 +221,14 @@ out <- as.data.frame(
   out) %>% 
   left_join(p_trust_scores %>% filter(Condition=="H"), by="s")
 
-for(i in unique(cleandats$s)) {
-  print(i)
-  effects2 <- automation_effects(cleandats %>% filter(s==i))
-  effects2$s <- i
-  
-  if (i ==1) out2 <- effects2 else out2 <- rbind(out2,effects2)
-  
-}
+# for(i in unique(cleandats$s)) {
+#   print(i)
+#   effects2 <- automation_effects(cleandats %>% filter(s==i))
+#   effects2$s <- i
+#   
+#   if (i ==1) out2 <- effects2 else out2 <- rbind(out2,effects2)
+#   
+# }
 
 
 out <- as.data.frame(

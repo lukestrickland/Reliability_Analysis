@@ -221,3 +221,54 @@ make_contrast_table <- function (contrast_summary) {
 }
 
 
+
+
+
+
+require(jsonlite)
+
+set_fit_path = function() {
+  if (Sys.info()['sysname'] != "Windows") {
+    stop("Dropbox path only availble on Windows")
+  }
+  locations = list(
+    LOCALAPPDATA = file.path(Sys.getenv("LOCALAPPDATA"), "Dropbox\\info.json", fsep = "\\"),
+    APPDATA = file.path(Sys.getenv("APPDATA"), "Dropbox\\info.json", fsep = "\\")
+  )
+  LOCATION = NULL
+  for (loc in locations) {
+    if (file.exists(loc)) {
+      LOCATION <- loc
+    } 
+  }
+  if(is.null(LOCATION)) {stop("Dropbox config file not found")}
+  dropboxpath = jsonlite::fromJSON(txt = LOCATION)$personal$path
+  return(file.path(normalizePath(dropboxpath, winslash = "/"), "fits"))  
+}
+
+
+
+create_loadpath <- function(foldername){
+  
+  function(filenam) {
+    print(foldername)
+    load(file.path(foldername, filenam), env=parent.frame())
+  }
+  
+}
+
+
+
+create_savepath <-  function(foldername){
+  
+  function(object, filenam) {
+    originalName <- deparse(substitute(object))
+    savepath <- file.path(foldername, filenam)
+    cat(paste0("Saving: ", savepath))
+    assign(originalName, object)
+    save(list=originalName, file=savepath)
+  }
+  
+}
+
+

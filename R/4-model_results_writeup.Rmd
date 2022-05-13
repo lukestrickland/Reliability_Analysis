@@ -14,6 +14,7 @@ by Luke Strickland
 
 source("dmc/dmc.R")
 source("dmc/dmc_extras.R")
+source("R/0-analysis_functions.R")
 load_model ("LBA", "lba_B.R")
 
 theme_set(theme_simple())
@@ -25,41 +26,37 @@ library(pander)
 library(snowfall)
 options(digits=2)
 
+fitpath <- file.path(set_fit_path(), "Reliability_Analysis")
+loadpath <- create_loadpath(fitpath)
+savepath <- create_savepath(fitpath)
 
-path <- "C:/Users/282952E/Dropbox/fits/Reliability_Analysis/"
+loadpath("CA_top_samples_A_lb_final.RData")
 
-loadpath <- function(filenam) {
-  path <- "C:/Users/282952E/Dropbox/fits/Reliability_Analysis/"
-  load(paste0(path, filenam), env=parent.frame())
+CA_top_samples <- CA_top_samples_A_lb
+
+# 
+# pp <- h.post.predict.dmc(CA_top_samples, save.simulation = TRUE, cores=8)
+# 
+rescore_column <- function(df) {
+  df$R <- factor(as.character(toupper(substr(df$S,1,1))==df$R))
+  new_data <- attr(df, "data")
+  new_data$R <- factor(as.character(toupper(substr(new_data$S,1,1))==new_data$R))
+#  new_data <- new_data %>% select(C, everything())
+  #%>% select(-R)
+  attr(df, "data") <- new_data
+#  df %>% select(reps, C, everything())
+  #%>% select(-R)
+  df
 }
-
-loadpath("CA_top_samples.RData")
-
-
-
 # 
-# pp <- h.post.predict.dmc(CA_top_samples, save.simulation = TRUE, cores=length(CA_top_samples))
-# 
-# theme_set(theme_simple())
-# 
-# rescore_column <- function(df) {
-#   df$R <- factor(as.character(toupper(substr(df$S,1,1))==df$R))
-#   new_data <- attr(df, "data")
-#   new_data$R <- factor(as.character(toupper(substr(new_data$S,1,1))==new_data$R))
-# #  new_data <- new_data %>% select(C, everything())
-#   #%>% select(-R)
-#   attr(df, "data") <- new_data
-# #  df %>% select(reps, C, everything())
-#   #%>% select(-R)
-#   df
-# }
-# 
-# pp1 <- lapply(pp, rescore_column)
-# 
-# save(pp, pp1,
-#      file="samples_data/CA_top_samples_pp.RData")
+# savepath(pp,
+#      file="CA_top_samples_pp_A_lb.RData")
 
-loadpath("CA_top_samples_pp.RData")
+loadpath("CA_top_samples_pp_A_lb.RData")
+
+pp1 <- lapply(pp, rescore_column)
+
+
 
 tmp <- 1:24
 tmp <- tmp[!tmp==4]
@@ -69,9 +66,9 @@ CA_top_samples <- CA_top_samples[names(CA_top_samples) %in% full_balance]
 pp1 <- pp1[names(pp1) %in% full_balance]
 # 
 # fitlist <- GET.fitgglist.dmc(pp1, factors=c("cond", "failtrial"))
-# save(fitlist, file=paste0(path, "fitlist.RData"))
+# savepath(fitlist, file="fitlist_A_lb.RData")
 
-loadpath("fitlist.RData")
+loadpath("fitlist_A_lb.RData")
 
 ```
 
@@ -127,13 +124,13 @@ grid.arrange(plot1,plot2,plot3)
 ```
 
 ```{r evaluate_model_params_calc, echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
-# 
-# msds <- 
+
+# msds <-
 #   get.msds(CA_top_samples[names(CA_top_samples) %in% full_balance])
-# 
-# save(msds, file=
-#       "samples_data/msds_top_samples_balance.RData")
-# 
+# # 
+# savepath(msds, file=
+#       "msds_top_samples_balance_A_lb.RData")
+# # 
 # msds <-
 #   get.msds(CA_top_samples[names(CA_top_samples) != "4"])
 # 
@@ -142,7 +139,7 @@ grid.arrange(plot1,plot2,plot3)
 # 
 
 
-loadpath("msds_top_samples_balance.RData")
+loadpath("msds_top_A_lb.RData")
 
 paste.msd <- function(x) paste(signif(x["M"],2), "(", 
                                signif(x["SD"],2), ")", sep="")

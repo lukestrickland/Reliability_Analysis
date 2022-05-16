@@ -1,26 +1,25 @@
 source("dmc/dmc.R")
 source("dmc/dmc_extras.R")
 load_model ("LBA","lba_B.R")
+library(stringr)
 
 
+fitpath <- file.path(set_fit_path(), "Reliability_Analysis")
+loadpath <- create_loadpath(fitpath)
+savepath <- create_savepath(fitpath)
 
-loadpath <- function(filenam) {
-  # path <- "C:/Users/282952E/Dropbox/fits/Reliability_Analysis/"
-  path <- "D:/Dropbox/fits/Reliability_Analysis/"
-  load(paste0(path, filenam), env=parent.frame())
-}
+loadpath("CA_top_samples_A_lb_final.RData")
 
+CA_top_samples <- CA_top_samples_A_lb
 
-
-loadpath("CA_top_samples.RData")
 theme_set(theme_simple())
 
-loadpath("CA_top_samples_pp.RData")
+loadpath("CA_top_samples_pp_A_lb.RData")
 
 options(dplyr.summarise.inform = FALSE)
 
-# pnames <- colnames(CA_top_samples[[1]]$theta)
-# 
+pnames <- colnames(CA_top_samples[[1]]$theta)
+
 # thres_pickps_set <- rep(
 #   pnames[
 #    grep("B\\.M", pnames)
@@ -33,16 +32,16 @@ options(dplyr.summarise.inform = FALSE)
 #   )
 # 
 # 
-# no_thres <- pickps.h.post.predict.dmc(CA_top_samples, 
+# no_thres <- pickps.h.post.predict.dmc(CA_top_samples,
 #                                       save.simulation = TRUE,
-#                                       pickps_set=thres_pickps_set, 
+#                                       pickps_set=thres_pickps_set,
 #                                       pickps_other=thres_pickps_other)
-# 
-# save(no_thres, file= "samples_data/no_thres.RData")
+#  
+# savepath(no_thres, file= "no_thres_A_lb.RData")
 
-loadpath("no_thres.RData")
+loadpath("no_thres_A_lb.RData")
 
-# 
+
 # 
 # ex <- c("mean_v.nn.M.nonf.true", "mean_v.cc.M.nonf.true",
 #                    "mean_v.nn.M.fail.false", "mean_v.cc.M.fail.false")
@@ -51,15 +50,15 @@ loadpath("no_thres.RData")
 # 
 # ex_pickps_other <- c(str_replace(ex, "M", "L"), str_replace(ex, "M", "H"))
 # 
-# no_ex <- pickps.h.post.predict.dmc(CA_top_samples, 
+# no_ex <- pickps.h.post.predict.dmc(CA_top_samples,
 #                                       save.simulation = TRUE,
-#                                       pickps_set=ex_pickps_set, 
+#                                       pickps_set=ex_pickps_set,
 #                                       pickps_other=ex_pickps_other)
 # 
-# save(no_ex, file= "samples_data/no_ex.RData")
+# savepath(no_ex, file= "no_ex_A_lb.RData")
 
-loadpath("no_ex.RData")
-
+loadpath("no_ex_A_lb.RData")
+# 
 # 
 # 
 # inh <- c("mean_v.nn.M.nonf.false", "mean_v.cc.M.nonf.false",
@@ -69,14 +68,14 @@ loadpath("no_ex.RData")
 # 
 # inh_pickps_other <- c(str_replace(inh, "M", "L"), str_replace(inh, "M", "H"))
 # 
-# no_inh <- pickps.h.post.predict.dmc(CA_top_samples, 
+# no_inh <- pickps.h.post.predict.dmc(CA_top_samples,
 #                                    save.simulation = TRUE,
-#                                    pickps_set=inh_pickps_set, 
+#                                    pickps_set=inh_pickps_set,
 #                                    pickps_other=inh_pickps_other)
 # 
-# save(no_inh, file= "samples_data/no_inh.RData")
+# save(no_inh, file= "samples_data/no_inh_A_lb.RData")
 
-loadpath("no_inh.RData")
+loadpath("no_inh_A_lb.RData")
 
 
 tmp <- 1:24
@@ -222,4 +221,5 @@ combined_RT %>% ggplot(aes(y=mean, x=eff)) + geom_point(size=2)+
   geom_line(aes(group=1,y=data), linetype=2) +facet_grid(model~Auto) +xlab("")+
   ylab("")
 
+save(combined, combined_RT, file="postexp_summaries_A_lb.RData")
 

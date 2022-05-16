@@ -69,7 +69,6 @@ pp1 <- pp1[names(pp1) %in% full_balance]
 # savepath(fitlist, file="fitlist_A_lb.RData")
 
 loadpath("fitlist_A_lb.RData")
-loadpath("postexp_summaries_A_lb.RData")
 
 ```
 
@@ -469,79 +468,26 @@ pandoc.table(Btab)
 ```
 
 
+```{r echo= FALSE , results = "asis", message=FALSE, warning=FALSE, fig.width = 8, fig.height=6}
+loadpath("postexp_summaries_A_lb.RData")
+
+percents <- 100*combined$mean/combined$data
+
+```
 
 
 # Posterior Exploration
-
 To summarise, we found substantial evidence that both high- and low- reliability automation decision aids are incorporated into decision making with an inhibition mechanism, strong evidence that participants relied on an additional excitation mechanism for high-reliability automation, and weaker evidence of this mechanism for low-reliability automation. We also found some evidence that thresholds were reduced when automation was provided, particularly for high-reliability automation. Here, we conduct simulations to investigate the role of these mechanisms in explaining the observed effects of automation. We focus on automation costs and benefits to both accuracy and RT. To investigate, we effectively removed mechanisms from the model by changing parameter values. To the extent removing these mechanisms causes miss-fit to observed effects that the model previously fitted, those mechanisms allowed the model to fit the effects. To remove excitation from the model, accumulation rates to decisions in line with the decision aid advice  were set to the values estimated from matched manual trials. Similarly, to remove inhibition, accumulation rates to decisions disagreeing with the decision aid were set equal to their value in matched manual trials. To remove threshold effects, thresholds were set to the levels observed in manual conditions. 
 
-Figures 10 and 11 depict the results of our posterior exploration. We found major miss-fits to automation’s effects on accuracy when inhibition was removed for both high and low reliability conditions, and also major miss-fits to accuracy effects for the high-reliability condition when excitation was removed. This suggests that inhibition was important for explaining automation’s effects on accuracy in both conditions, and excitation important in the high-reliability condition. We also found that removing inhibition from the model caused major miss-fits to the effects of automation on RT, particularly costs of incorrect automation to RT, demonstrating the importance of the inhibition mechanism in driving this cost . In contrast to these findings, setting thresholds to manual levels had little effect on predictions regarding automation’s effect, suggesting they were relatively less important to model predictions.   
-
-```{r echo= FALSE}
-postexp_accs_cap <- "Figure 10. Exploration of the importance of model mechanisms in explaining automation’s effects on accuracy. Accuracy benefit refers to improvement of accuracy on automation-correct trials, and accuracy cost to decrements in accuracy on automation-incorrect trials. Model mechanisms were removed by setting parameter values equal to matched manual conditions and resulting miss-fit indicates the degree to which that mechanism was responsible for the full model’s ability to predict effects. Model predictions correspond to the white circles, the posterior means correspond to the black shaded dots. The error bars display the 95% posterior credible intervals of the predictions."
-```
-
-```{r echo= FALSE , results = "asis", message=FALSE, warning=FALSE, fig.width = 8, fig.height=6, fig.cap=postexp_accs_cap}
-
-
-combined %>% ggplot(aes(y=mean, x=eff)) + geom_point(size=2)+ 
-  geom_errorbar(aes(ymax = upper, ymin = lower), width= 0.2) +
-  geom_point(aes_string(x = 'eff', y= 'data'), pch=21, size=3, colour="black")+
- geom_line(aes(group=1,y=data), linetype=2) +facet_grid(model~Auto) +xlab("")+
-  ylab("")
-
-```
-
-
-```{r echo= FALSE}
-postexp_RTs_cap <- "Figure 11. Exploration of the importance of model mechanisms in explaining automation’s effects on RT. RT benefit refers to the speeding of correct RT on trials where automation was correct, and RT cost refers to the slowing of RT on trials where the automation was incorrect. Model mechanisms were removed by setting parameter values equal to matched manual conditions and resulting miss-fit indicates the degree to which that mechanism was responsible for the full model’s ability to predict effects. Model predictions correspond to the white circles, the posterior means correspond to the black shaded dots. The error bars display the 95% posterior credible intervals of the predictions."
-```
-
-```{r echo= FALSE , results = "asis", message=FALSE, warning=FALSE, fig.width = 8, fig.height=6, fig.cap=postexp_RTs_cap}
-
-combined_RT %>% ggplot(aes(y=mean, x=eff)) + geom_point(size=2)+ 
-  geom_errorbar(aes(ymax = upper, ymin = lower), width= 0.2) +
-  geom_point(aes_string(x = 'eff', y= 'data'), pch=21, size=3, colour="black")+
-  geom_line(aes(group=1,y=data), linetype=2) +facet_grid(model~Auto) +xlab("")+
-  ylab("")
-
-```
-
-
-```{r echo= FALSE , results = "asis", message=FALSE, warning=FALSE, fig.width = 8, fig.height=6}
-
-loadpath("model_correlations_A_lb.RData")
+Figures 10 and 11 depict the results of our posterior exploration. The full model provided good fits to automation’s effects on accuracy when inhibition was removed for both high (`r percents[1]`%) and low (`r percents[2]`%) reliability conditions. Similarly, the full model provided
+reasonably good fits to the costs of automation in the high (`r percents[3]`%) and low (`r percents[4]`%) reliability conditions. In contrast, removing inhibition from the model left the model far less 
+predictive of automation benefits in the high-reliability condition (`r percents[5]`%), automation costs in the high-reliability condition (`r percents[6]`%)automation benefits in the low-reliability condition (`r percents[7]`%), automation costs in the low-reliability condition (`r percents[8]`%). This demonstrates the significant role that inhibition played in the benefits and costs of automation in both conditions.
 
 
 
-MCIs <- function(MCI){
-  MCI <- round(MCI, 2)
-  paste0(MCI["M"], " (", MCI["LCI"], " - ", MCI["HCI"], ")")
-  
-}
 
-cortab <- rbind(
-  c("", ""),
-  c(MCIs(ex_L_benefit), MCIs(inh_L_benefit)),
-  c(MCIs(ex_L_cost), MCIs(inh_L_cost)),
-  c(MCIs(ex_L_benefit_RT), MCIs(inh_L_benefit_RT)),
-  c(MCIs(ex_L_cost_RT), MCIs(inh_L_cost_RT)), 
-  c(MCIs(ex_L_trust), MCIs(inh_L_trust)), 
-  c("", ""),
-  c(MCIs(ex_H_benefit), MCIs(inh_H_benefit)),
-  c(MCIs(ex_H_cost), MCIs(inh_H_cost)),
-  c(MCIs(ex_H_benefit_RT), MCIs(inh_H_benefit_RT)),
-  c(MCIs(ex_H_cost_RT), MCIs(inh_H_cost_RT)),
-  c(MCIs(ex_H_trust), MCIs(inh_H_trust))
-)
+We found major miss-fits to , and also major miss-fits to accuracy effects for the high-reliability condition when excitation was removed. This suggests that inhibition was important for explaining automation’s effects on accuracy in both conditions, and excitation important in the high-reliability condition. We also found that removing inhibition from the model caused major miss-fits to the effects of automation on RT, particularly costs of incorrect automation to RT, demonstrating the importance of the inhibition mechanism in driving this cost . In contrast to these findings, setting thresholds to manual levels had little effect on predictions regarding automation’s effect, suggesting they were relatively less important to model predictions.   
 
-rownames(cortab) <- c("Low Reliability", "Accuracy Benefit", "Accuracy Cost", "RT Benefit",
-                        "RT Cost", "Trust",
-                      "High Reliability",
-                      "Accuracy Benefit", "Accuracy Cost", "RT Benefit",
-                        "RT Cost", "Trust")
-colnames(cortab) <- c("Excitation ", "Inhibition ")
 
-pandoc.table(cortab)
 
-```
+

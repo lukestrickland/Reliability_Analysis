@@ -228,7 +228,16 @@ zandp <- function(samples, fun){
     effect<- group.inference.dist(samples, fun)
     Z <- mean(effect)/sd(effect)
     p <- minp(effect)
-    paste(round(Z,2), " (", round(p,3), ")", sep="")
+    p <- as.character(p)
+    p[as.numeric(p)<0.001] <- "<.001"
+    
+    p[p!="<.001"] <- as.character(
+      round(as.numeric(p[p!="<.001"]), 3)
+    )
+    
+    p <- gsub("0\\.", ".", p)
+    
+    paste(round(Z,2), " (", p, ")", sep="")
 }
 
 mean.sd <- function(samples, fun){

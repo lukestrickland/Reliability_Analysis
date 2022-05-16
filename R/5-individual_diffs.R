@@ -315,12 +315,12 @@ out$H_cost <- as.numeric(out$H_cost)
 out$L_benefit <- as.numeric(out$L_benefit)
 out$L_cost <- as.numeric(out$L_cost)
 
-get_corplausible_MCI(CA_top_samples, 
+inh_H_benefit <- get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_H,
                      cv=as.data.frame(out), 
                      p.name="H_benefit", n=24)
 
-get_corplausible_MCI(CA_top_samples, 
+ex_H_benefit <- get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_H,
                      cv=as.data.frame(out), 
                      p.name="H_benefit", n=24)
@@ -328,12 +328,12 @@ get_corplausible_MCI(CA_top_samples,
 
 
 
-get_corplausible_MCI(CA_top_samples, 
+inh_L_benefit <- get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_L,
                      cv=as.data.frame(out), 
                      p.name="L_benefit", n=24)
 
-get_corplausible_MCI(CA_top_samples, 
+ex_L_benefit <- get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_L,
                      cv=as.data.frame(out), 
                      p.name="L_benefit", n=24)
@@ -342,24 +342,24 @@ get_corplausible_MCI(CA_top_samples,
 
 
 
-get_corplausible_MCI(CA_top_samples, 
+inh_H_cost <- get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_H,
                      cv=as.data.frame(out), 
                      p.name="H_cost", n=24)
 
-get_corplausible_MCI(CA_top_samples, 
+ex_H_cost <- get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_H,
                      cv=as.data.frame(out), 
                      p.name="H_cost", n=24)
 
 
 
-get_corplausible_MCI(CA_top_samples, 
+inh_L_cost <- get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_L,
                      cv=as.data.frame(out), 
                      p.name="L_cost", n=24)
 
-get_corplausible_MCI(CA_top_samples, 
+ex_L_cost <- get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_L,
                      cv=as.data.frame(out), 
                      p.name="L_cost", n=24)
@@ -369,29 +369,32 @@ get_corplausible_MCI(CA_top_samples,
 
 
 
-get_corplausible_MCI(CA_top_samples, 
+inh_H_trust <- get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_H,
                      cv=as.data.frame(out), 
                      p.name="score.x", n=24)
 
-get_corplausible_MCI(CA_top_samples, 
+ex_H_trust <-get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_H,
                      cv=as.data.frame(out), 
                      p.name="score.x", n=24)
 
 
-get_corplausible_MCI(CA_top_samples, 
+inh_L_trust <- get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_L,
                      cv=as.data.frame(out), 
                      p.name="score.y", n=24)
 
-get_corplausible_MCI(CA_top_samples, 
+ex_L_trust <- get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_L,
                      cv=as.data.frame(out), 
                      p.name="score.y", n=24)
 
 
-
+tmp <- rbind(inh_H_benefit, ex_H_benefit, inh_L_benefit, ex_L_benefit,
+      inh_H_cost, ex_H_cost, inh_L_cost, ex_L_cost,
+      inh_H_trust, ex_H_trust, inh_L_trust, ex_L_trust
+      )
 
 
 #same thing but with RT effects
@@ -431,6 +434,8 @@ automation_effects <- function (currentsim) {
   
 }
 
+
+rm(out)
 #
 library(dplyr)
 library(readxl)
@@ -465,14 +470,14 @@ out <- as.data.frame(
   out) %>% 
   left_join(p_trust_scores %>% filter(Condition=="H"), by="s")
 
-for(i in unique(cleandats$s)) {
-  print(i)
-  effects2 <- automation_effects(cleandats %>% filter(s==i))
-  effects2$s <- i
-  
-  if (i ==1) out2 <- effects2 else out2 <- rbind(out2,effects2)
-  
-}
+# for(i in unique(cleandats$s)) {
+#   print(i)
+#   effects2 <- automation_effects(cleandats %>% filter(s==i))
+#   effects2$s <- i
+#   
+#   if (i ==1) out2 <- effects2 else out2 <- rbind(out2,effects2)
+#   
+# }
 
 
 out <- as.data.frame(
@@ -559,12 +564,12 @@ out$H_cost <- as.numeric(out$H_cost)
 out$L_benefit <- as.numeric(out$L_benefit)
 out$L_cost <- as.numeric(out$L_cost)
 
-get_corplausible_MCI(CA_top_samples, 
+inh_H_benefit_RT <- get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_H,
                      cv=as.data.frame(out), 
                      p.name="H_benefit", n=24)
 
-get_corplausible_MCI(CA_top_samples, 
+ex_H_benefit_RT <- get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_H,
                      cv=as.data.frame(out), 
                      p.name="H_benefit", n=24)
@@ -572,12 +577,12 @@ get_corplausible_MCI(CA_top_samples,
 
 
 
-get_corplausible_MCI(CA_top_samples, 
+inh_L_benefit_RT <- get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_L,
                      cv=as.data.frame(out), 
                      p.name="L_benefit", n=24)
 
-get_corplausible_MCI(CA_top_samples, 
+ex_L_benefit_RT <-get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_L,
                      cv=as.data.frame(out), 
                      p.name="L_benefit", n=24)
@@ -586,24 +591,24 @@ get_corplausible_MCI(CA_top_samples,
 
 
 
-get_corplausible_MCI(CA_top_samples, 
+inh_H_cost_RT <- get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_H,
                      cv=as.data.frame(out), 
                      p.name="H_cost", n=24)
 
-get_corplausible_MCI(CA_top_samples, 
+ex_H_cost_RT <- get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_H,
                      cv=as.data.frame(out), 
                      p.name="H_cost", n=24)
 
 
 
-get_corplausible_MCI(CA_top_samples, 
+inh_L_cost_RT <- get_corplausible_MCI(CA_top_samples, 
                      fun=inhibition_corplausible_L,
                      cv=as.data.frame(out), 
                      p.name="L_cost", n=24)
 
-get_corplausible_MCI(CA_top_samples, 
+ex_L_cost_RT <- get_corplausible_MCI(CA_top_samples, 
                      fun=excitation_corplausible_L,
                      cv=as.data.frame(out), 
                      p.name="L_cost", n=24)
@@ -613,45 +618,91 @@ get_corplausible_MCI(CA_top_samples,
 
 
 
-get_corplausible_MCI(CA_top_samples, 
-                     fun=inhibition_corplausible_H,
-                     cv=as.data.frame(out), 
-                     p.name="score.x", n=24)
-
-get_corplausible_MCI(CA_top_samples, 
-                     fun=excitation_corplausible_H,
-                     cv=as.data.frame(out), 
-                     p.name="score.x", n=24)
 
 
-get_corplausible_MCI(CA_top_samples, 
-                     fun=inhibition_corplausible_L,
-                     cv=as.data.frame(out), 
-                     p.name="score.y", n=24)
 
-get_corplausible_MCI(CA_top_samples, 
-                     fun=excitation_corplausible_L,
-                     cv=as.data.frame(out), 
-                     p.name="score.y", n=24)
+tmp <- rbind(inh_H_benefit, ex_H_benefit, inh_L_benefit, ex_L_benefit,
+             inh_H_cost, ex_H_cost, inh_L_cost, ex_L_cost,
+             inh_H_benefit_RT, ex_H_benefit_RT, inh_L_benefit_RT, ex_L_benefit_RT,
+             inh_H_cost_RT, ex_H_cost_RT, inh_L_cost_RT, ex_L_cost_RT,
+             inh_H_trust, ex_H_trust, inh_L_trust, ex_L_trust
+)
+
+tmp <- as.data.frame(tmp)
+
+
+tmp$effect <- rownames(tmp)
 
 
 
 
 
 
+save(ex_L_benefit, inh_L_benefit, ex_H_benefit, inh_H_benefit,
+  ex_L_cost, inh_L_cost, ex_H_cost, inh_H_cost,
+  
+  ex_L_benefit_RT, inh_L_benefit_RT, ex_H_benefit_RT, inh_H_benefit_RT,
+  ex_L_cost_RT, inh_L_cost_RT, ex_H_cost_RT, inh_H_cost_RT,
+  
+  ex_L_trust, inh_L_trust, ex_H_trust, inh_H_trust,
+  file= "model_correlations_A_lb.RData")
 
 
 
+MCIs <- function(MCI){
+  MCI <- round(MCI, 2)
+  paste0(MCI["M"], " (", MCI["LCI"], " - ", MCI["HCI"], ")")
+  
+}
+
+cortab <- rbind(
+  c(MCIs(ex_L_benefit), MCIs(inh_L_benefit), MCIs(ex_H_benefit), MCIs(inh_H_benefit)),
+  c(MCIs(ex_L_cost), MCIs(inh_L_cost), MCIs(ex_H_cost), MCIs(inh_H_cost)),
+  
+  c(MCIs(ex_L_benefit_RT), MCIs(inh_L_benefit_RT), MCIs(ex_H_benefit_RT), MCIs(inh_H_benefit_RT)),
+  c(MCIs(ex_L_cost_RT), MCIs(inh_L_cost_RT), MCIs(ex_H_cost_RT), MCIs(inh_H_cost_RT)),
+  
+  c(MCIs(ex_L_trust), MCIs(inh_L_trust), MCIs(ex_H_trust), MCIs(inh_H_trust))
+
+)
+
+rownames(cortab) <- c("Accuracy Benefit", "Accuracy Cost", "RT Benefit",
+                        "RT Cost", "Trust")
+colnames(cortab) <- c("Excitation (L)", "Inhibition (L)", "Excitation (H)", "Inhibition (H)")
+
+pandoc.table(cortab)
 
 
 
+tmp$cond <- "High Reliability"
+tmp$cond[grepl("_L_", tmp$effect)] <- "Low Reliability"
 
+tmp$mech <- "Inhibition"
+tmp$mech[grepl("ex", tmp$effect)] <- "Excitation"
 
+tmp$var <- "Accuracy Cost"
+tmp$var[grepl("benefit$", tmp$effect)] <- "Accuracy Benefit"
 
+tmp$var[grepl("cost_RT", tmp$effect)] <- "RT Cost"
+tmp$var[grepl("benefit_RT", tmp$effect)] <- "RT Benefit"
 
+tmp$var[grepl("trust", tmp$effect)]  <- "Trust"
 
+inhextab <- rbind(
+  c("", "", "", ""),
+  c(L_conf_ex_success, L_conf_inh_success, H_conf_ex_success, H_conf_inh_success),
+  c(L_conf_ex_fail, L_conf_inh_fail, H_conf_ex_fail, H_conf_inh_fail),
+  c("", "", "", ""),
+  c(L_nonconf_ex_success, L_nonconf_inh_success, H_conf_ex_success, H_nonconf_inh_success),
+  c(L_nonconf_ex_fail, L_nonconf_inh_fail, H_conf_ex_fail, H_nonconf_inh_fail)
+  
+)
 
+rownames(inhextab) <- c("Conflict Trials", "Automation Correct", "Automation Incorrect",
+                        "Non-conflict Trials", "Automation Correct", "Automation Incorrect")
+colnames(inhextab) <- c("Excitation (L)", "Inhibition (L)", "Excitation (H)", "Inhibition (H)")
 
+pandoc.table(inhextab)
 
 
 

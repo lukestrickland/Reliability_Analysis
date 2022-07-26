@@ -1,7 +1,15 @@
-load("samples_data/CA_top_thresholdsmult_samples.RData")
+source("dmc/dmc.R")
+source("dmc/dmc_extras.R")
+source("R/0-analysis_functions.R")
 
-autos<- lapply(
-  CA_top_thresholdsmult_samples,
+fitpath <- file.path(set_fit_path(), "Reliability_Analysis")
+loadpath <- create_loadpath(fitpath)
+savepath <- create_savepath(fitpath)
+
+loadpath("CA_top_thresholdsmult_simple_samples_A_lb.RData")
+
+autos<- sapply(
+  CA_top_thresholdsmult_simple_samples_A_lb,
   function(x) attr(x, "auto"))
 
 auto_names <- names(autos[!is.na(autos)])

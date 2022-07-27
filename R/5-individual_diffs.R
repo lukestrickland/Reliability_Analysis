@@ -1,7 +1,7 @@
 rm(list=ls())
 source("dmc/dmc.R")
 source("dmc/dmc_extras.R")
-load("samples_data/CA_top_samples.RData")
+source("R/0-analysis_functions.R")
 load_model("LBA", "lba_B.R")
 
 
@@ -21,136 +21,7 @@ CA_top_samples <- CA_top_samples[names(CA_top_samples) %in% full_balance]
 
 theme_set(theme_simple())
 
-#First get plot of individual participant inhibition/excitation levels
-
-#apply a function to an individual participant's thetas
-# and get mean + 95% CIs
-
-individual_summary <- function(theta_FUN, samples){
-  individual_thetas <- samples$theta
-  effect_summary <- theta_FUN(individual_thetas)
-  c(mean= mean(effect_summary), LCI= quantile(effect_summary, 0.025),
-    HCI= quantile(effect_summary, 0.975))
-}
-
-# Deploy individual_summary to get mean + 95% CIs of a function of thetas
-# for participant list
-
-get_individual_summaries <- function(theta_FUN, hsamples, effect_name){
-  
-  effect_df<- as.data.frame(
-    t(
-      sapply(FUN=function(x)  individual_summary(x, theta_FUN=theta_FUN), 
-        hsamples)
-      )
-  )
-  effect_df$effect <- effect_name
-  effect_df$participant <- rownames(effect_df)
-  colnames(effect_df) <- c("M", "LCI", "HCI", "effect", "participant")
-  effect_df
-}
-
-
-#Inhibition and excitation functions- averaged over the effects
-
-H_inhibition <- function(x) (
-                     (
-                        #non-conflict, non-fail, false reduction   
-                        (x[,"mean_v.nn.M.nonf.false",,drop=FALSE] - x[,"mean_v.nn.H.nonf.false",,drop=FALSE]) +
-                        #non-conflict, fail, true reduction
-                        (x[,"mean_v.nn.M.fail.true",,drop=FALSE] - x[,"mean_v.nn.H.fail.true",,drop=FALSE]) +
-                        #conflict, non-fail, false reduction  
-                        (x[,"mean_v.cc.M.nonf.false",,drop=FALSE] - x[,"mean_v.cc.H.nonf.false",,drop=FALSE]) +
-                        #conflict, fail, true reduction
-                        (x[,"mean_v.cc.M.fail.true",,drop=FALSE] - x[,"mean_v.cc.H.fail.true",,drop=FALSE]) 
-                     )/4
-)
-
-
-H_excitation <- function(x) (
-                     (
-                        #non-conflict, non-fail, true increase   
-                        (x[,"mean_v.nn.H.nonf.true",,drop=FALSE] - x[,"mean_v.nn.M.nonf.true",,drop=FALSE]) +
-                        #non-conflict, fail, false increase
-                        (x[,"mean_v.nn.H.fail.false",,drop=FALSE] - x[,"mean_v.nn.M.fail.false",,drop=FALSE]) +
-                        #conflict, non-fail, true increase
-                        (x[,"mean_v.cc.H.nonf.true",,drop=FALSE] - x[,"mean_v.cc.M.nonf.true",,drop=FALSE]) +
-                        #conflict, fail, false increase
-                        (x[,"mean_v.cc.H.fail.false",,drop=FALSE] - x[,"mean_v.cc.M.fail.false",,drop=FALSE]) 
-                     )/4
-)
-
-L_inhibition <- function(x) (
-  (
-    #non-conflict, non-fail, false reduction   
-    (x[,"mean_v.nn.M.nonf.false",,drop=FALSE] - x[,"mean_v.nn.L.nonf.false",,drop=FALSE]) +
-      #non-conflict, fail, true reduction
-      (x[,"mean_v.nn.M.fail.true",,drop=FALSE] - x[,"mean_v.nn.L.fail.true",,drop=FALSE]) +
-      #conflict, non-fail, false reduction  
-      (x[,"mean_v.cc.M.nonf.false",,drop=FALSE] - x[,"mean_v.cc.L.nonf.false",,drop=FALSE]) +
-      #conflict, fail, true reduction
-      (x[,"mean_v.cc.M.fail.true",,drop=FALSE] - x[,"mean_v.cc.L.fail.true",,drop=FALSE]) 
-  )/4
-)
-
-
-L_excitation <- function(x) (
-  (
-    #non-conflict, non-fail, true increase   
-    (x[,"mean_v.nn.L.nonf.true",,drop=FALSE] - x[,"mean_v.nn.M.nonf.true",,drop=FALSE]) +
-      #non-conflict, fail, false increase
-      (x[,"mean_v.nn.L.fail.false",,drop=FALSE] - x[,"mean_v.nn.M.fail.false",,drop=FALSE]) +
-      #conflict, non-fail, true increase
-      (x[,"mean_v.cc.L.nonf.true",,drop=FALSE] - x[,"mean_v.cc.M.nonf.true",,drop=FALSE]) +
-      #conflict, fail, false increase
-      (x[,"mean_v.cc.L.fail.false",,drop=FALSE] - x[,"mean_v.cc.M.fail.false",,drop=FALSE]) 
-  )/4
-)
-
-               
-
-
-
-
-effects_H_inhibition <- get_individual_summaries(
-  theta_FUN = H_inhibition, hsamples=CA_top_samples,
-                         effect_name= "H_Inhibition")
-
-effects_H_excitation <- get_individual_summaries(
-  theta_FUN = H_excitation, hsamples=CA_top_samples,
-                         effect_name= "H_Excitation")
-
-
-effects_L_inhibition <- get_individual_summaries(
-  theta_FUN = L_inhibition, hsamples=CA_top_samples,
-  effect_name= "L_Inhibition")
-
-effects_L_excitation <- get_individual_summaries(
-  theta_FUN = L_excitation, hsamples=CA_top_samples,
-  effect_name= "L_Excitation")
-
-
-all_effects <- rbind(effects_H_excitation,
-                            effects_H_inhibition,
-                     effects_L_inhibition,
-                     effects_L_excitation)
-
-all_effects$participant <- factor(as.numeric(all_effects$participant))
-
-all_effects$Condition <- "L"
-all_effects$Condition[grep("H", all_effects$effect)] <- "H"
-
-all_effects$DV <- "Excitation"
-all_effects$DV[grep("Inhibition", all_effects$effect)] <- "Inhibition"
-
-
-ggplot(all_effects, aes(participant, M)) +
-    geom_point(stat = "identity", size=2.5) +
-    geom_errorbar(aes(ymax = HCI , ymin = LCI, width = 0.3)) +
-    geom_hline(aes(yintercept=0), linetype=2)+
-    facet_grid(Condition~DV) +xlab("Participant") +ylab ("Effect")
-
-
+#
 # Next look at correlations across participants between inhibition/excitation
 # and automation accuracy effects (benefits on automation correct, 
 # costs on automation incorrect)

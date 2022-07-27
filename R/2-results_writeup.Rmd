@@ -487,14 +487,14 @@ H_failure_effect_RT_trust <- cor.test(p_scores_autoboost$score, p_scores_autoboo
 
 
 p_scores_autoboost <- p_trust_scores %>% filter(Condition=="L") %>% 
-  right_join(H_mRTs_success_effect, by="s")
+  right_join(L_mRTs_success_effect, by="s")
 
 L_success_effect_RT_trust <-cor.test(p_scores_autoboost$score, p_scores_autoboost$mRTboost)
 
 
 
 p_scores_autoboost <- p_trust_scores %>% filter(Condition=="L") %>% 
-  right_join(H_mRTs_failure_effect, by="s")
+  right_join(L_mRTs_failure_effect, by="s")
 
 L_failure_effect_RT_trust <-cor.test(p_scores_autoboost$score, p_scores_autoboost$mRTboost)
 
@@ -510,4 +510,4 @@ automation scores in each condition. In the high-reliability condition, trust in
 automation was correlated both with the benefits of correct automated decision aids, `r cor_apa(H_success_effect_trust, format = "markdown", print = FALSE)`, 
 and the costs of incorrect decision aids, `r cor_apa(H_failure_effect_trust, format = "markdown", print = FALSE)`. In contrast, in the low-reliability condition it was correlated with neither the benefits
 of correct decision aids,`r cor_apa(L_success_effect_trust, format = "markdown", print = FALSE)`, nor the cost of incorrect decision aids,`r cor_apa(L_failure_effect_trust, format = "markdown", print = FALSE)`. The benefits of correct automation to RT were not correlated with trust in either
-the high-reliability ,`r cor_apa(H_success_effect_RT_trust, format = "markdown", print = FALSE)`, or low-reliability automation conditions,`r cor_apa(L_success_effect_RT_trust, format = "markdown", print = FALSE)`. The costs of incorrect automation to RT were not correlated with trust in the high-reliability condition, `r cor_apa(H_failure_effect_RT_trust, format = "markdown", print = FALSE)`, but were in the low-reliability condition, `r cor_apa(L_failure_effect_RT_trust, format = "markdown", print = FALSE)`. 
+the high-reliability ,`r cor_apa(H_success_effect_RT_trust, format = "markdown", print = FALSE)`, or low-reliability automation conditions,`r cor_apa(L_success_effect_RT_trust, format = "markdown", print = FALSE)`. The costs of incorrect automation to RT were not correlated with trust in the high-reliability condition, `r cor_apa(H_failure_effect_RT_trust, format = "markdown", print = FALSE)`, or in the low-reliability condition, `r cor_apa(L_failure_effect_RT_trust, format = "markdown", print = FALSE)`. 

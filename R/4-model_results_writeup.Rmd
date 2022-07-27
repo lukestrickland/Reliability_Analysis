@@ -317,8 +317,8 @@ inhextab <- rbind(
   c(L_conf_ex_success, L_conf_inh_success, H_conf_ex_success, H_conf_inh_success),
   c(L_conf_ex_fail, L_conf_inh_fail, H_conf_ex_fail, H_conf_inh_fail),
   c("", "", "", ""),
-  c(L_nonconf_ex_success, L_nonconf_inh_success, H_conf_ex_success, H_nonconf_inh_success),
-  c(L_nonconf_ex_fail, L_nonconf_inh_fail, H_conf_ex_fail, H_nonconf_inh_fail)
+  c(L_nonconf_ex_success, L_nonconf_inh_success, H_nonconf_ex_success, H_nonconf_inh_success),
+  c(L_nonconf_ex_fail, L_nonconf_inh_fail, H_nonconf_ex_fail, H_nonconf_inh_fail)
   
       )
 
@@ -555,6 +555,8 @@ rownames(cortab) <- c("Low Reliability", "Accuracy Benefit", "Accuracy Cost", "R
 colnames(cortab) <- c("Excitation ", "Inhibition ")
 
 pandoc.table(cortab)
+
+pandoc.table(round(msds, 2))
 
 ```
 

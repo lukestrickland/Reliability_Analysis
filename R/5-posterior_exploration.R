@@ -1,4 +1,6 @@
+rm(list=ls())
 source("dmc/dmc.R")
+source("R/0-analysis_functions.R")
 source("dmc/dmc_extras.R")
 load_model ("LBA","lba_B.R")
 library(stringr)
@@ -8,9 +10,9 @@ fitpath <- file.path(set_fit_path(), "Reliability_Analysis")
 loadpath <- create_loadpath(fitpath)
 savepath <- create_savepath(fitpath)
 
-loadpath("CA_top_samples_A_lb_final.RData")
-
-CA_top_samples <- CA_top_samples_A_lb
+# loadpath("CA_top_samples_A_lb_final.RData")
+# 
+# CA_top_samples <- CA_top_samples_A_lb
 
 theme_set(theme_simple())
 
@@ -35,12 +37,12 @@ pnames <- colnames(CA_top_samples[[1]]$theta)
 # no_thres <- pickps.h.post.predict.dmc(CA_top_samples,
 #                                       save.simulation = TRUE,
 #                                       pickps_set=thres_pickps_set,
-#                                       pickps_other=thres_pickps_other)
-#  
+#                                       pickps_other=thres_pickps_other,
+#                                       n.post=200)
+# #  
 # savepath(no_thres, file= "no_thres_A_lb.RData")
 
 loadpath("no_thres_A_lb.RData")
-
 
 # 
 # ex <- c("mean_v.nn.M.nonf.true", "mean_v.cc.M.nonf.true",
@@ -53,17 +55,20 @@ loadpath("no_thres_A_lb.RData")
 # no_ex <- pickps.h.post.predict.dmc(CA_top_samples,
 #                                       save.simulation = TRUE,
 #                                       pickps_set=ex_pickps_set,
-#                                       pickps_other=ex_pickps_other)
+#                                       pickps_other=ex_pickps_other,
+#                                    n.post=200)
 # 
 # savepath(no_ex, file= "no_ex_A_lb.RData")
 
 loadpath("no_ex_A_lb.RData")
-# 
-# 
-# 
+
+
+# # 
+# # 
+# # 
 # inh <- c("mean_v.nn.M.nonf.false", "mean_v.cc.M.nonf.false",
 #         "mean_v.nn.M.fail.true", "mean_v.cc.M.fail.true")
-# 
+# # 
 # inh_pickps_set <- rep(inh, 2)
 # 
 # inh_pickps_other <- c(str_replace(inh, "M", "L"), str_replace(inh, "M", "H"))
@@ -71,9 +76,10 @@ loadpath("no_ex_A_lb.RData")
 # no_inh <- pickps.h.post.predict.dmc(CA_top_samples,
 #                                    save.simulation = TRUE,
 #                                    pickps_set=inh_pickps_set,
-#                                    pickps_other=inh_pickps_other)
-# 
-# save(no_inh, file= "samples_data/no_inh_A_lb.RData")
+#                                    pickps_other=inh_pickps_other,
+#                                    n.post=200)
+# # #
+# savepath(no_inh, file= "no_inh_A_lb.RData")
 
 loadpath("no_inh_A_lb.RData")
 

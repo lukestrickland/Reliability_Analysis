@@ -2,6 +2,7 @@
 mapac_data/
 *.Rhistory*
 .RData*
+*.RData
 samples_data/
 .Rproj.user
 OLD/
@@ -15,4 +16,5 @@ auto_top_samples/
 R/OLD_SCRIPTS/
 *_samples.RData
 demographics.csv
+demographics_2.csv
 OLD_data/

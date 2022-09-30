@@ -128,18 +128,31 @@ effects of task repetition.*
 
 ```{r accuracy_model, echo= FALSE, message=TRUE, warning=TRUE, results="asis"}
 # 
-# acc_glmer_top <-
-#   glmer(C ~ Stimulus * Condition * Session * Automation + (1 |s),
-#         data = cleandats,
-#         family = binomial(link = "probit"))
+acc_glmer_top <-
+  glmer(C ~ Stimulus * Condition * Session * Automation + (1 |s),
+        data = cleandats,
+        family = binomial(link = "probit"))
 
 
 # save(acc_glmer_top, file = "img/acc_model.RData")
+
+
 
 load("img/acc_model.RData")
 
 pandoc.table(
   make_model_table(Anova(acc_glmer_top,type="II")))
+
+
+
+
+acc_glmer_random <-
+  glmer(C ~ Stimulus * Condition * Session * Automation + (1 +Stimulus * Condition * Session * Automation|s),
+        data = cleandats,
+        family = binomial(link = "probit"))
+
+save(acc_glmer_random, file = "img/acc_model_randomslopes.RData")
+
 
 ```
 

@@ -1,0 +1,113 @@
+---
+title: "Automation Reliability in ATC: Mixed Model Analyses"
+author: "ljgs"
+date: "20/09/2021"
+output:
+  word_document:
+    reference_docx: ../assets/apa.docx
+  pdf_document: default
+  html_document: default
+---
+by Luke Strickland
+
+```{r load_packages_and_data, echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
+
+
+
+library(tidyverse)
+library(ggplot2)
+library(lme4)
+library(car)
+library(apa)
+# library(lsmeans)
+library(pander)
+options(digits=2)
+source("R/0-analysis_functions.R")
+
+load("img/cleandats.RData")
+
+cleandats <- cleandats %>% mutate(C = toupper(S)==R)
+
+colnames(cleandats)[colnames(cleandats)=="sess"] <- "Session"
+colnames(cleandats)[colnames(cleandats)=="cond"] <- "Condition"
+colnames(cleandats)[colnames(cleandats)=="S"] <- "Stimulus"
+colnames(cleandats)[colnames(cleandats)=="failtrial"] <- "Automation"
+
+cleandats$Session <- factor(cleandats$Session, levels=c("1", "2", "3"),
+                      labels=c("One", "Two", "Three"))
+
+cleandats$Condition <- factor(cleandats$Condition , levels=c("AUTO_L", "AUTO_H", "MANUAL"),
+                      labels=c("Automation_Low", "Automation_High", "Manual"))
+
+cleandats$Automation <- factor(cleandats$Automation, levels=c("nonf", "fail"),
+                      labels=c("Automation Success", "Automation Failure"))
+
+cleandats$Stimulus <- factor(cleandats$Stimulus, levels=c("c", "n"),
+                      labels=c("Conflict", "Non-conflict"))
+
+
+tmp <- 1:24
+tmp <- tmp[!tmp==4]
+full_balance <- c(tmp, 28) 
+
+cleandats <- cleandats %>% filter(s %in% full_balance)
+
+theme_set(theme_simple())
+
+accs <-
+  cleandats %>% group_by(s, Stimulus, Condition, Automation, Session) %>% 
+  filter(!is.na(R)) %>% summarise(acc = mean(C)) %>%
+  arrange(s) %>% arrange(Automation)
+
+RTs <- cleandats %>% group_by(s, Stimulus, Condition, Automation, Session) %>% 
+  filter(C) %>% 
+  summarise(RT=mean(RT))%>% arrange(Automation)
+
+
+```
+
+
+```{r check_participants,  echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
+
+accs_SDT <- accs %>% mutate(acc=pmin(0.99,pmax(acc, .01)))
+
+dprimes <- accs_SDT  %>% 
+  group_by(s, Condition, Automation) %>% 
+  summarise(dprime= qnorm(acc[Stimulus=="Conflict"]) - 
+              qnorm(1-acc[Stimulus=="Non-conflict"]))
+
+dprimes %>% group_by(Condition, Automation) %>% summarise(mean(dprime))
+
+# 
+criterion_settings <- accs_SDT  %>%
+  group_by(s, Condition, Automation) %>%
+  summarise(c=-0.5*(qnorm(acc[Stimulus=="Conflict"]) +qnorm(1-acc[Stimulus=="Non-conflict"])))
+
+criterion_settings_mean <- criterion_settings %>% group_by(Condition, Automation) %>% summarise(c=mean(c))
+
+criterion_settings_se <- arr2df(
+  se2(criterion_settings, facs=c("Condition", "Automation"), dvnam="c"))
+
+
+
+plot.df <- full_join(criterion_settings_mean, criterion_settings_se)
+
+plot.df$Automation <- factor(plot.df$Automation, 
+                             levels=c("Automation Success", "Automation Failure"),
+                             labels= c("Automation Correct", "Automation Incorrect"))
+
+plot.df$Condition <- factor(plot.df$Condition, 
+                             levels=c("Manual", "Automation_Low", "Automation_High"),
+                             labels= c("Manual", "Low Reliability", "High Reliability"))
+
+ggplot(plot.df, aes(Automation, c)) +geom_point(aes(col=Condition, shape=Condition), size=3)  + 
+  geom_errorbar(aes(
+    ymax = c + 1.96*y,
+    ymin = c - 1.96*y,
+    colour = Condition, width = 0.3
+  )) +ylab ("criterion") +xlab("") +
+    theme(text = element_text(size = 16))
+
+
+
+```

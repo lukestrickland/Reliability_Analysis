@@ -1,0 +1,507 @@
+---
+title: "Automation Failures in ATC: Standard Results"
+author: "ljgs"
+date: "20/11/2019"
+output:
+  word_document:
+    reference_docx: ../assets/apa.docx
+  pdf_document: default
+  html_document: default
+---
+by Luke Strickland
+
+```{r load_packages_and_data, echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
+
+source("dmc/dmc.R")
+source("dmc/dmc_extras.R")
+source("R/0-analysis_functions.R")
+load_model ("LBA", "lba_B.R")
+
+theme_set(theme_simple())
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(pander)
+library(snowfall)
+options(digits=2)
+
+fitpath <- file.path(set_fit_path(), "Reliability_Analysis")
+loadpath <- create_loadpath(fitpath)
+savepath <- create_savepath(fitpath)
+
+loadpath("CA_top_samples_A_lb_final.RData")
+
+CA_top_samples <- CA_top_samples_A_lb
+
+# 
+# pp <- h.post.predict.dmc(CA_top_samples, save.simulation = TRUE, cores=8)
+# 
+rescore_column <- function(df) {
+  df$R <- factor(as.character(toupper(substr(df$S,1,1))==df$R))
+  new_data <- attr(df, "data")
+  new_data$R <- factor(as.character(toupper(substr(new_data$S,1,1))==new_data$R))
+#  new_data <- new_data %>% select(C, everything())
+  #%>% select(-R)
+  attr(df, "data") <- new_data
+#  df %>% select(reps, C, everything())
+  #%>% select(-R)
+  df
+}
+# 
+# savepath(pp,
+#      file="CA_top_samples_pp_A_lb.RData")
+
+loadpath("CA_top_samples_pp_A_lb.RData")
+
+pp1 <- lapply(pp, rescore_column)
+
+
+
+tmp <- 1:24
+tmp <- tmp[!tmp==4]
+full_balance <- c(tmp, 28) 
+
+CA_top_samples <- CA_top_samples[names(CA_top_samples) %in% full_balance]
+pp1 <- pp1[names(pp1) %in% full_balance]
+# 
+# fitlist <- GET.fitgglist.dmc(pp1, factors=c("cond", "failtrial"))
+# savepath(fitlist, file="fitlist_A_lb.RData")
+
+loadpath("fitlist_A_lb.RData")
+loadpath("postexp_summaries_A_lb.RData")
+loadpath("model_correlations_A_lb.RData")
+
+
+```
+
+
+```{r evaluate_model_params_calc, echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
+
+# msds <-
+#   get.msds(CA_top_samples[names(CA_top_samples) %in% full_balance])
+# # 
+# savepath(msds, file=
+#       "msds_top_samples_balance_A_lb.RData")
+# # 
+# msds <-
+#   get.msds(CA_top_samples[names(CA_top_samples) != "4"])
+# 
+# save(msds, file=
+#       "samples_data/msds_top_samples.RData")
+# 
+
+
+loadpath("msds_top_A_lb.RData")
+
+paste.msd <- function(x) paste(signif(x["M"],2), "(", 
+                               signif(x["SD"],2), ")", sep="")
+zpvec <- function(samples, fun){
+    effect<- group.inference.dist(samples, fun)
+    Z <- mean(effect)/sd(effect)
+    p <- minp(effect)
+    if(p<.001) p <- "< .001" else {
+      p = round(p,3)
+      p= paste("= .", 
+      substr(p,3,10), sep="")
+    }
+    c(round(Z,2), p)
+}
+```
+
+
+```{r echo= FALSE}
+Vs_cap <- "Figure 6. Estimates of accumulation rates. The shapes indicate the posterior means and the error bars correspond to the mean plus or minus the posterior standard deviation. In cases where the shapes are overlapping,
+the condition means are very close together (e.g., match, automation-correct, conflict, low reliability vs manual)."
+```
+
+```{r echo=FALSE, fig.cap=Vs_cap, fig.height=8, fig.width=9.425, message=FALSE, warning=FALSE, results="hide"}
+Vs <- msds[grep("mean_v", rownames(msds)),]
+
+Vs$Cond <- "Manual" 
+Vs$Cond[grep("L", rownames(Vs))] <- "Low"
+Vs$Cond[grep("H", rownames(Vs))] <- "High"
+Vs$Auto <- "Automation Correct"
+Vs$Auto[grep("fail", rownames(Vs))] <- "Automation Incorrect"
+Vs$S <- "Conflict"
+Vs$S[grep("nn", rownames(Vs))] <- "Non-conflict"
+Vs$match <- "Match"
+Vs$match[grep("false", rownames(Vs))] <- "Mismatch"
+
+names(Vs)[names(Vs)=="Cond"] <- "Condition"
+
+Vs$exinh <- NA
+Vs$exinh[Vs$Auto=="Automation Correct" & Vs$match=="Match"] <- "Excitation"
+Vs$exinh[Vs$Auto=="Automation Incorrect" & Vs$match=="Match"] <- "Inhibition"
+Vs$exinh[Vs$Auto=="Automation Correct" & Vs$match=="Mismatch"] <- "Inhibition"
+Vs$exinh[Vs$Auto=="Automation Incorrect" & Vs$match=="Mismatch"] <- "Excitation"
+
+
+ggplot(Vs, aes(factor(Auto),M)) + 
+  geom_point(stat = "identity",aes(shape=Condition, col=Condition), size=3) +
+  geom_errorbar(aes(ymax = M + SD, ymin = M - SD, width = 0.3, col=Condition))+ 
+  ylab("Accumulation Rate") + xlab("")+ 
+  scale_colour_manual(values = c("#E66100", "#5D3A9B", "black")) +
+  facet_grid(S ~ match,scales = "free", space = "fixed") +
+    theme(text = element_text(size = 16))
+
+```
+
+*Table 2*. 
+Statistical tests of automation-induced excitation and inhibition effects. We depict Z(p), where Z is the posterior mean of the parameter difference divided by its standard deviation, and p is the one-tailed posterior probability against their being an effect. L stands for low-reliability condition and H for the high-reliability condition. 
+
+```{r echo= FALSE ,results = "hide", message=FALSE, warning=FALSE, results='asis'}
+
+H_conf_inh_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.M.fail.true",, drop=F] - 
+           thetas[,"mean_v.cc.H.fail.true",, drop=F])
+
+H_conf_ex_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.H.fail.false",, drop=F] - 
+          thetas[,"mean_v.cc.M.fail.false",, drop=F] 
+           )
+
+H_conf_ex_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.H.nonf.true",, drop=F] -
+          thetas[,"mean_v.cc.M.nonf.true",, drop=F] 
+           )
+
+H_conf_inh_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.M.nonf.false",, drop=F] - 
+           thetas[,"mean_v.cc.H.nonf.false",, drop=F])
+
+
+
+H_nonconf_inh_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.M.fail.true",, drop=F] - 
+           thetas[,"mean_v.nn.H.fail.true",, drop=F])
+
+H_nonconf_ex_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.H.fail.false",, drop=F] - 
+          thetas[,"mean_v.nn.M.fail.false",, drop=F] 
+           )
+
+H_nonconf_ex_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.H.nonf.true",, drop=F] -
+          thetas[,"mean_v.nn.M.nonf.true",, drop=F] 
+           )
+
+H_nonconf_inh_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.M.nonf.false",, drop=F] - 
+           thetas[,"mean_v.nn.H.nonf.false",, drop=F])
+
+
+
+L_conf_inh_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.M.fail.true",, drop=F] - 
+           thetas[,"mean_v.cc.L.fail.true",, drop=F])
+
+L_conf_ex_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.L.fail.false",, drop=F] - 
+          thetas[,"mean_v.cc.M.fail.false",, drop=F] 
+           )
+
+L_conf_ex_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.L.nonf.true",, drop=F] -
+          thetas[,"mean_v.cc.M.nonf.true",, drop=F] 
+           )
+
+L_conf_inh_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.cc.M.nonf.false",, drop=F] - 
+           thetas[,"mean_v.cc.L.nonf.false",, drop=F])
+
+
+
+L_nonconf_inh_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.M.fail.true",, drop=F] - 
+           thetas[,"mean_v.nn.L.fail.true",, drop=F])
+
+L_nonconf_ex_fail <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.L.fail.false",, drop=F] - 
+          thetas[,"mean_v.nn.M.fail.false",, drop=F] 
+           )
+
+L_nonconf_ex_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.L.nonf.true",, drop=F] -
+          thetas[,"mean_v.nn.M.nonf.true",, drop=F] 
+           )
+
+L_nonconf_inh_success <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"mean_v.nn.M.nonf.false",, drop=F] - 
+           thetas[,"mean_v.nn.L.nonf.false",, drop=F])
+
+
+
+
+
+inhextab <- rbind(
+  c("", "", "", ""),
+  c(L_conf_ex_success, L_conf_inh_success, H_conf_ex_success, H_conf_inh_success),
+  c(L_conf_ex_fail, L_conf_inh_fail, H_conf_ex_fail, H_conf_inh_fail),
+  c("", "", "", ""),
+  c(L_nonconf_ex_success, L_nonconf_inh_success, H_nonconf_ex_success, H_nonconf_inh_success),
+  c(L_nonconf_ex_fail, L_nonconf_inh_fail, H_nonconf_ex_fail, H_nonconf_inh_fail)
+  
+      )
+
+rownames(inhextab) <- c("Conflict Trials", "Automation Correct", "Automation Incorrect",
+                        "Non-conflict Trials", "Automation Correct", "Automation Incorrect")
+colnames(inhextab) <- c("Excitation (L)", "Inhibition (L)", "Excitation (H)", "Inhibition (H)")
+
+pandoc.table(inhextab)
+
+
+```
+
+
+# Threshold effects
+
+Threshold estimates are plotted in Figure 9. Statistical tests of differences across automated and manual conditions in thresholds are tabulated in Table 3. There were some small drops in threshold levels in the low-reliability condition compared with the manual condition, suggesting participants may have become less cautious when provided with automation. There were relatively stronger decreases in thresholds observed in the high-reliability condition when compared with the manual condition. 
+
+
+```{r echo= FALSE}
+Bs_cap <- "Figure 7. Estimates of thresholds. The shapes indicate the posterior means and the error bars correspond to the mean plus or minus the posterior standard deviation."
+```
+
+```{r echo= FALSE , results = "hide", message=FALSE, warning=FALSE, fig.cap = Bs_cap, fig.width = 8, fig.height=3.5}
+Bs <- msds[grep("B", rownames(msds)),]
+
+Bs$R <- "Non-conflict"
+Bs$R[grep("C", rownames(Bs))] <- "Conflict"
+Bs$Cond <- "Manual"
+Bs$Cond[grep("L", rownames(Bs))] <- "Low"
+Bs$Cond[grep("H", rownames(Bs))] <- "High"
+Bs$Session <- "Session One"
+Bs$Session[grep("2", rownames(Bs))] <- "Session Two"
+Bs$Session[grep("3", rownames(Bs))] <- "Session Three"
+
+Bs$Session <- factor(Bs$Session, levels=c("Session One", "Session Two", "Session Three"))
+
+
+names(Bs)[names(Bs)=="Cond"] <- "Condition"
+
+ggplot(Bs, aes(factor(R),M)) + 
+  geom_point(stat = "identity",aes(col=Condition, shape=Condition), size=2.5) +
+  geom_errorbar(aes(ymax = M + SD, ymin = M - SD, width = 0.3, col=Condition))+ 
+  ylab("Threshold") + xlab("Accumulator")+
+  facet_grid(.~Session) +
+    theme(text = element_text(size = 14))
+
+
+```
+
+Table 3. 
+*Statistical tests of differences in thresholds across automated and manual conditions. We depict Z(p), where Z is the posterior mean of the parameter difference divided by its standard deviation, and p is the one-tailed posterior probability against their being an effect.*
+
+```{r echo= FALSE , results = "asis", message=FALSE, warning=FALSE, fig.width = 8, fig.height=6}
+
+B_N_1_MvL <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.1.N",, drop=F] -
+          thetas[,"B.L.1.N",, drop=F] 
+           )
+
+B_N_2_MvL <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.2.N",, drop=F] -
+          thetas[,"B.L.2.N",, drop=F] 
+           )
+
+B_N_3_MvL <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.3.N",, drop=F] -
+          thetas[,"B.L.3.N",, drop=F] 
+           )
+
+
+
+B_C_1_MvL <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.1.C",, drop=F] -
+          thetas[,"B.L.1.C",, drop=F] 
+           )
+
+B_C_2_MvL <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.2.C",, drop=F] -
+          thetas[,"B.L.2.C",, drop=F] 
+           )
+
+B_C_3_MvL <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.3.C",, drop=F] -
+          thetas[,"B.L.3.C",, drop=F] 
+           )
+
+
+
+B_N_1_MvH <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.1.N",, drop=F] -
+          thetas[,"B.H.1.N",, drop=F] 
+           )
+
+B_N_2_MvH <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.2.N",, drop=F] -
+          thetas[,"B.H.2.N",, drop=F] 
+           )
+
+B_N_3_MvH <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.3.N",, drop=F] -
+          thetas[,"B.H.3.N",, drop=F] 
+           )
+
+
+
+B_C_1_MvH <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.1.C",, drop=F] -
+          thetas[,"B.H.1.C",, drop=F] 
+           )
+
+B_C_2_MvH <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.2.C",, drop=F] -
+          thetas[,"B.H.2.C",, drop=F] 
+           )
+
+B_C_3_MvH <- zandp(CA_top_samples, 
+        function (thetas)
+          thetas[,"B.M.3.C",, drop=F] -
+          thetas[,"B.H.3.C",, drop=F] 
+           )
+
+
+Btab <- rbind(
+  c(B_C_1_MvL, B_C_2_MvL, B_C_3_MvL),
+  c(B_N_1_MvL, B_N_2_MvL, B_N_3_MvL),
+  c(B_C_1_MvH, B_C_2_MvH, B_C_3_MvH),
+  c(B_N_1_MvH, B_N_2_MvH, B_N_3_MvH)
+
+      )
+
+rownames(Btab) <- c("Conflict Accumulator (L)",
+                    "Non-conflict Accumulator (L)",
+                    "Conflict Accumulator (H)",
+                    "Non-conflict Accumulator (H)")
+colnames(Btab) <- c("Session One", "Session Two", "Session Three")
+
+pandoc.table(Btab)
+
+
+
+```
+
+
+
+
+# Posterior Exploration
+
+To summarise, we found substantial evidence that both high- and low- reliability automation decision aids are incorporated into decision making with an inhibition mechanism, strong evidence that participants relied on an additional excitation mechanism for high-reliability automation, and weaker evidence of this mechanism for low-reliability automation. We also found some evidence that thresholds were reduced when automation was provided, particularly for high-reliability automation. Here, we conduct simulations to investigate the role of these mechanisms in explaining the observed effects of automation. We focus on automation costs and benefits to both accuracy and RT. To investigate, we effectively removed mechanisms from the model by changing parameter values. To the extent removing these mechanisms causes miss-fit to observed effects that the model previously fitted, those mechanisms allowed the model to fit the effects. To remove excitation from the model, accumulation rates to decisions in line with the decision aid advice  were set to the values estimated from matched manual trials. Similarly, to remove inhibition, accumulation rates to decisions disagreeing with the decision aid were set equal to their value in matched manual trials. To remove threshold effects, thresholds were set to the levels observed in manual conditions. 
+
+Figures 10 and 11 depict the results of our posterior exploration. We found major miss-fits to automation’s effects on accuracy when inhibition was removed for both high and low reliability conditions, and also major miss-fits to accuracy effects for the high-reliability condition when excitation was removed. This suggests that inhibition was important for explaining automation’s effects on accuracy in both conditions, and excitation important in the high-reliability condition. We also found that removing inhibition from the model caused major miss-fits to the effects of automation on RT for both high and low reliability conditions, particularly costs of incorrect automation to RT, demonstrating the importance of the inhibition mechanism in driving this cost. In contrast to these findings, setting thresholds to manual levels had little effect on predictions regarding automation’s effect, suggesting they were relatively less important to model predictions.   
+
+```{r echo= FALSE}
+postexp_accs_cap <- "Figure 8. Exploration of the importance of model mechanisms in explaining automation’s effects on accuracy. Accuracy benefit refers to improvement of accuracy on automation-correct trials, and accuracy cost to decrements in accuracy on automation-incorrect trials. Model mechanisms were removed by setting parameter values equal to matched manual conditions and resulting miss-fit indicates the degree to which that mechanism was responsible for the full model’s ability to predict effects. Model predictions correspond to the white circles, the posterior means correspond to the black shaded dots. The error bars display the 95% posterior credible intervals of the predictions."
+```
+
+```{r echo= FALSE , results = "asis", message=FALSE, warning=FALSE, fig.width = 8, fig.height=7, fig.cap=postexp_accs_cap}
+
+
+combined %>% ggplot(aes(y=mean, x=eff)) + geom_point(size=2)+ 
+  geom_errorbar(aes(ymax = upper, ymin = lower), width= 0.2) +
+  geom_point(aes_string(x = 'eff', y= 'data'), pch=21, size=3, colour="black")+
+ geom_line(aes(group=1,y=data), linetype=2) +facet_grid(model~Auto) +xlab("")+
+  ylab("") +
+    theme(text = element_text(size = 14))
+
+```
+
+
+```{r echo= FALSE}
+postexp_RTs_cap <- "Figure 9. *Exploration of the importance of model mechanisms in explaining automation’s effects on RT. RT benefit refers to the speeding of correct RT on trials where automation was correct, and RT cost refers to the slowing of RT on trials where the automation was incorrect. Model mechanisms were removed by setting parameter values equal to matched manual conditions and resulting miss-fit indicates the degree to which that mechanism was responsible for the full model’s ability to predict effects. Model predictions correspond to the white circles, the posterior means correspond to the black shaded dots. The error bars display the 95% posterior credible intervals of the predictions.*"
+```
+
+```{r echo= FALSE , results = "asis", message=FALSE, warning=FALSE, fig.width = 8, fig.height=7, fig.cap=postexp_RTs_cap}
+
+combined_RT %>% ggplot(aes(y=mean, x=eff)) + geom_point(size=2)+ 
+  geom_errorbar(aes(ymax = upper, ymin = lower), width= 0.2) +
+  geom_point(aes_string(x = 'eff', y= 'data'), pch=21, size=3, colour="black")+
+  geom_line(aes(group=1,y=data), linetype=2) +facet_grid(model~Auto) +xlab("")+
+  ylab("")+
+    theme(text = element_text(size = 14))
+
+```
+
+
+# Individual differences
+
+We explored how individual differences in model parameters related to the costs and benefits of automation to accuracy. To do so, we constructed distributions of “plausible value” correlations (Ly et al., 2017), in which a correlation between model parameters and the data of interest is calculated for every posterior sample, creating a distribution of correlations. We then adjusted this plausible value distribution to correct for population-level inference (Ly et al., 2018). This approach of correcting for sample size is quite conservative, and so we are confident that trends identified by this method are robust. In Table 3 we report posterior mean values of these correlations and accompanying 95% credible intervals. In text we refer to “plausible” correlations as those with 95% credible intervals not overlapping 0. For our correlations we obtained a single estimate of excitation and inhibition for each participant by averaging over conflict and non-conflict trials, and over automation-correct and automation-incorrect trials. 
+
+Table 4.
+*Plausible value correlations between model mechanisms, benefits of automation, costs of automation, and trust in automation. We constructed distributions of "plausible values" (Ly et al., 2017) of correlations by calculating the correlation across participants between model parameters and dependent variables for every posterior sample.  This was then corrected for population-level inference (Ly et al., 2018). We report posterior mean (95% credible interval) of these correlation distributions. We obtained a single estimate of excitation and inhibition for each participant by averaging over conflict and non-conflict trials, and over automation-correct and automation-incorrect trials*
+
+```{r echo= FALSE , results = "asis", message=FALSE, warning=FALSE, fig.width = 8, fig.height=6}
+
+
+
+
+MCIs <- function(MCI){
+  MCI <- round(MCI, 2)
+  paste0(MCI["M"], " (", MCI["LCI"], " - ", MCI["HCI"], ")")
+  
+}
+
+cortab <- rbind(
+  c("", ""),
+  c(MCIs(ex_L_benefit), MCIs(inh_L_benefit)),
+  c(MCIs(ex_L_cost), MCIs(inh_L_cost)),
+  c(MCIs(ex_L_benefit_RT), MCIs(inh_L_benefit_RT)),
+  c(MCIs(ex_L_cost_RT), MCIs(inh_L_cost_RT)), 
+  c(MCIs(ex_L_trust), MCIs(inh_L_trust)), 
+  c("", ""),
+  c(MCIs(ex_H_benefit), MCIs(inh_H_benefit)),
+  c(MCIs(ex_H_cost), MCIs(inh_H_cost)),
+  c(MCIs(ex_H_benefit_RT), MCIs(inh_H_benefit_RT)),
+  c(MCIs(ex_H_cost_RT), MCIs(inh_H_cost_RT)),
+  c(MCIs(ex_H_trust), MCIs(inh_H_trust))
+)
+
+rownames(cortab) <- c("Low Reliability", "Accuracy Benefit", "Accuracy Cost", "RT Benefit",
+                        "RT Cost", "Trust",
+                      "High Reliability",
+                      "Accuracy Benefit", "Accuracy Cost", "RT Benefit",
+                        "RT Cost", "Trust")
+colnames(cortab) <- c("Excitation ", "Inhibition ")
+
+pandoc.table(cortab)
+
+pandoc.table(round(msds, 2))
+
+```
+
+In the high-reliability condition, we found a plausible positive correlation between the benefits of correct automation to accuracy and excitation, but we did not find a plausible correlation between automation accuracy benefits and inhibition. In contrast, in the low-reliability condition, there was a plausible positive correlation between the benefits of correct automation and inhibition, but no plausible correlation between accuracy benefits and excitation. Similarly, in the high-reliability condition there was a plausible positive correlation between the costs of incorrect automation to accuracy and excitation but not inhibition, whereas in the low-reliability condition there was a plausible positive correlation between the costs of incorrect automation to inhibition but not excitation. 
+
+We found that benefits to RT on automation-correct trials were (plausibly) positively correlated with excitation for both the high-reliability condition and the low-reliability condition, whereas they were weakly (not plausibly) negatively correlated with inhibition in both the high-reliability condition and the low-reliability condition. In contrast, costs to RT on automation-incorrect trials were (plausibly) positively correlated with inhibition for both the high-reliability and low-reliability conditions, and weakly (not plausibly) negatively correlated with excitation for both the high-reliability and low-reliability conditions. 
+
+We also examined how model parameters correlated with trust in automation. In the high-reliability condition, there was a plausible positive correlation between excitation and trust, but no plausible correlation between inhibition and trust. In the low-reliability condition, there was not a plausible correlation between trust and either excitation or inhibition.
+
+

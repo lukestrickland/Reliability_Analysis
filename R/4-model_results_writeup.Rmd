@@ -556,8 +556,6 @@ colnames(cortab) <- c("Excitation ", "Inhibition ")
 
 pandoc.table(cortab)
 
-pandoc.table(round(msds, 2))
-
 ```
 
 In the high-reliability condition, we found a plausible positive correlation between the benefits of correct automation to accuracy and excitation, but we did not find a plausible correlation between automation accuracy benefits and inhibition. In contrast, in the low-reliability condition, there was a plausible positive correlation between the benefits of correct automation and inhibition, but no plausible correlation between accuracy benefits and excitation. Similarly, in the high-reliability condition there was a plausible positive correlation between the costs of incorrect automation to accuracy and excitation but not inhibition, whereas in the low-reliability condition there was a plausible positive correlation between the costs of incorrect automation to inhibition but not excitation. 

@@ -115,8 +115,8 @@ plot.df$Condition <- factor(plot.df$Condition,
 ggplot(plot.df, aes(Automation, c)) +geom_point(aes(col=Condition, shape=Condition), size=3)  + 
   scale_colour_manual(values = c("#E66100", "#5D3A9B", "black"))+
   geom_errorbar(aes(
-    ymax = c + 1.96*y,
-    ymin = c - 1.96*y,
+    ymax = c + y,
+    ymin = c - y,
     colour = Condition, width = 0.3
   )) +ylab ("criterion") +xlab("") +
     theme(text = element_text(size = 16))

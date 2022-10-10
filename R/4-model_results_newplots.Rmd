@@ -76,6 +76,55 @@ loadpath("model_correlations_A_lb.RData")
 ```
 
 
+
+```{r echo= FALSE}
+pp_cap <- "Figure 5. *Posterior predictions of performance, averaged over participants. The model predictions correspond to the white circles, the posterior means correspond to the black shaded dots. The error bars display the 95% posterior credible intervals of the predictions. Three quantiles of response time (RT) are depicted, with the 0.1 quantile of RT grouped on the bottom, the median RT at the middle, and the 0.9 quantile of RT at the top.*"
+```
+
+```{r accuracy_descriptives_fortext, echo= FALSE, message=FALSE, warning=FALSE, fig.height = 7, fig.width=7, fig.cap=pp_cap}
+
+
+
+accs <- fitlist$pps %>% filter(R=="TRUE") %>% select(-R)
+
+accs$cond <- factor(accs$cond, levels=c("M", "L", "H"), labels =
+                      c("Manual", "Low Reliability", "High Reliability"))
+
+accs$failtrial <- factor(accs$failtrial, levels=c("nonf", "fail"), labels =
+                      c("Automation Correct", "Automation Incorrect"))
+
+plot1 <- ggplot.RP.dmc(accs, xaxis="cond") +xlab("") +ylab("Accuracy") +ylim(0,1)
+
+corRTs <- fitlist$RTs %>% filter(R=="TRUE") %>% select(-R)
+
+corRTs$cond <- factor(corRTs$cond, levels=c("M", "L", "H"), labels =
+                      c("Manual", "Low Reliability", "High Reliability"))
+
+corRTs$failtrial <- factor(corRTs$failtrial, levels=c("nonf", "fail"), labels =
+                      c("Automation Correct", "Automation Incorrect"))
+
+plot2 <- ggplot.RT.dmc(corRTs, xaxis="cond") +xlab("") +ylab("Correct RT (seconds)") +ylim(0.5,5.2)
+
+
+
+errRTs <- fitlist$RTs %>% filter(R=="FALSE") %>% select(-R)
+
+errRTs$cond <- factor(errRTs$cond, levels=c("M", "L", "H"), labels =
+                      c("Manual", "Low Reliability", "High Reliability"))
+
+errRTs$failtrial <- factor(errRTs$failtrial, levels=c("nonf", "fail"), labels =
+                      c("Automation Correct", "Automation Incorrect"))
+
+plot3 <- ggplot.RT.dmc(errRTs, xaxis="cond") +xlab("") +ylab("Error RT (seconds)")+ylim(0.5,5.2)
+
+
+grid.arrange(plot1,plot2,plot3)
+
+
+```
+
+
+
 ```{r evaluate_model_params_calc, echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
 
 # msds <-
@@ -143,136 +192,9 @@ ggplot(Vs, aes(factor(Auto),M)) +
   ylab("Accumulation Rate") + xlab("")+ 
   scale_colour_manual(values = c("#E66100", "#5D3A9B", "black")) +
   facet_grid(S ~ match,scales = "free", space = "fixed") +
-    theme(text = element_text(size = 16))
+    theme(text = element_text(size = 16)) +ylim(-2.9, 1.6)
 
 ```
-
-*Table 2*. 
-Statistical tests of automation-induced excitation and inhibition effects. We depict Z(p), where Z is the posterior mean of the parameter difference divided by its standard deviation, and p is the one-tailed posterior probability against their being an effect. L stands for low-reliability condition and H for the high-reliability condition. 
-
-```{r echo= FALSE ,results = "hide", message=FALSE, warning=FALSE, results='asis'}
-
-H_conf_inh_fail <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.cc.M.fail.true",, drop=F] - 
-           thetas[,"mean_v.cc.H.fail.true",, drop=F])
-
-H_conf_ex_fail <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.cc.H.fail.false",, drop=F] - 
-          thetas[,"mean_v.cc.M.fail.false",, drop=F] 
-           )
-
-H_conf_ex_success <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.cc.H.nonf.true",, drop=F] -
-          thetas[,"mean_v.cc.M.nonf.true",, drop=F] 
-           )
-
-H_conf_inh_success <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.cc.M.nonf.false",, drop=F] - 
-           thetas[,"mean_v.cc.H.nonf.false",, drop=F])
-
-
-
-H_nonconf_inh_fail <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.nn.M.fail.true",, drop=F] - 
-           thetas[,"mean_v.nn.H.fail.true",, drop=F])
-
-H_nonconf_ex_fail <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.nn.H.fail.false",, drop=F] - 
-          thetas[,"mean_v.nn.M.fail.false",, drop=F] 
-           )
-
-H_nonconf_ex_success <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.nn.H.nonf.true",, drop=F] -
-          thetas[,"mean_v.nn.M.nonf.true",, drop=F] 
-           )
-
-H_nonconf_inh_success <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.nn.M.nonf.false",, drop=F] - 
-           thetas[,"mean_v.nn.H.nonf.false",, drop=F])
-
-
-
-L_conf_inh_fail <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.cc.M.fail.true",, drop=F] - 
-           thetas[,"mean_v.cc.L.fail.true",, drop=F])
-
-L_conf_ex_fail <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.cc.L.fail.false",, drop=F] - 
-          thetas[,"mean_v.cc.M.fail.false",, drop=F] 
-           )
-
-L_conf_ex_success <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.cc.L.nonf.true",, drop=F] -
-          thetas[,"mean_v.cc.M.nonf.true",, drop=F] 
-           )
-
-L_conf_inh_success <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.cc.M.nonf.false",, drop=F] - 
-           thetas[,"mean_v.cc.L.nonf.false",, drop=F])
-
-
-
-L_nonconf_inh_fail <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.nn.M.fail.true",, drop=F] - 
-           thetas[,"mean_v.nn.L.fail.true",, drop=F])
-
-L_nonconf_ex_fail <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.nn.L.fail.false",, drop=F] - 
-          thetas[,"mean_v.nn.M.fail.false",, drop=F] 
-           )
-
-L_nonconf_ex_success <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.nn.L.nonf.true",, drop=F] -
-          thetas[,"mean_v.nn.M.nonf.true",, drop=F] 
-           )
-
-L_nonconf_inh_success <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"mean_v.nn.M.nonf.false",, drop=F] - 
-           thetas[,"mean_v.nn.L.nonf.false",, drop=F])
-
-
-
-
-
-inhextab <- rbind(
-  c("", "", "", ""),
-  c(L_conf_ex_success, L_conf_inh_success, H_conf_ex_success, H_conf_inh_success),
-  c(L_conf_ex_fail, L_conf_inh_fail, H_conf_ex_fail, H_conf_inh_fail),
-  c("", "", "", ""),
-  c(L_nonconf_ex_success, L_nonconf_inh_success, H_nonconf_ex_success, H_nonconf_inh_success),
-  c(L_nonconf_ex_fail, L_nonconf_inh_fail, H_nonconf_ex_fail, H_nonconf_inh_fail)
-  
-      )
-
-rownames(inhextab) <- c("Conflict Trials", "Automation Correct", "Automation Incorrect",
-                        "Non-conflict Trials", "Automation Correct", "Automation Incorrect")
-colnames(inhextab) <- c("Excitation (L)", "Inhibition (L)", "Excitation (H)", "Inhibition (H)")
-
-pandoc.table(inhextab)
-
-
-```
-
-
-# Threshold effects
-
-Threshold estimates are plotted in Figure 9. Statistical tests of differences across automated and manual conditions in thresholds are tabulated in Table 3. There were some small drops in threshold levels in the low-reliability condition compared with the manual condition, suggesting participants may have become less cautious when provided with automation. There were relatively stronger decreases in thresholds observed in the high-reliability condition when compared with the manual condition. 
 
 
 ```{r echo= FALSE}
@@ -300,138 +222,10 @@ ggplot(Bs, aes(factor(R),M)) +
   geom_point(stat = "identity",aes(col=Condition, shape=Condition), size=2.5) +
   geom_errorbar(aes(ymax = M + SD, ymin = M - SD, width = 0.3, col=Condition))+ 
   ylab("Threshold") + xlab("Accumulator")+
+  scale_colour_manual(values = c("#E66100", "#5D3A9B", "black")) +
   facet_grid(.~Session) +
     theme(text = element_text(size = 14))
 
-
-```
-
-Table 3. 
-*Statistical tests of differences in thresholds across automated and manual conditions. We depict Z(p), where Z is the posterior mean of the parameter difference divided by its standard deviation, and p is the one-tailed posterior probability against their being an effect.*
-
-```{r echo= FALSE , results = "asis", message=FALSE, warning=FALSE, fig.width = 8, fig.height=6}
-
-B_N_1_MvL <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"B.M.1.N",, drop=F] -
-          thetas[,"B.L.1.N",, drop=F] 
-           )
-
-B_N_2_MvL <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"B.M.2.N",, drop=F] -
-          thetas[,"B.L.2.N",, drop=F] 
-           )
-
-B_N_3_MvL <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"B.M.3.N",, drop=F] -
-          thetas[,"B.L.3.N",, drop=F] 
-           )
-
-
-
-B_C_1_MvL <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"B.M.1.C",, drop=F] -
-          thetas[,"B.L.1.C",, drop=F] 
-           )
-
-B_C_2_MvL <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"B.M.2.C",, drop=F] -
-          thetas[,"B.L.2.C",, drop=F] 
-           )
-
-B_C_3_MvL <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"B.M.3.C",, drop=F] -
-          thetas[,"B.L.3.C",, drop=F] 
-           )
-
-
-
-B_N_1_MvH <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"B.M.1.N",, drop=F] -
-          thetas[,"B.H.1.N",, drop=F] 
-           )
-
-B_N_2_MvH <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"B.M.2.N",, drop=F] -
-          thetas[,"B.H.2.N",, drop=F] 
-           )
-
-B_N_3_MvH <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"B.M.3.N",, drop=F] -
-          thetas[,"B.H.3.N",, drop=F] 
-           )
-
-
-
-B_C_1_MvH <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"B.M.1.C",, drop=F] -
-          thetas[,"B.H.1.C",, drop=F] 
-           )
-
-B_C_2_MvH <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"B.M.2.C",, drop=F] -
-          thetas[,"B.H.2.C",, drop=F] 
-           )
-
-B_C_3_MvH <- zandp(CA_top_samples, 
-        function (thetas)
-          thetas[,"B.M.3.C",, drop=F] -
-          thetas[,"B.H.3.C",, drop=F] 
-           )
-
-
-Btab <- rbind(
-  c(B_C_1_MvL, B_C_2_MvL, B_C_3_MvL),
-  c(B_N_1_MvL, B_N_2_MvL, B_N_3_MvL),
-  c(B_C_1_MvH, B_C_2_MvH, B_C_3_MvH),
-  c(B_N_1_MvH, B_N_2_MvH, B_N_3_MvH)
-
-      )
-
-rownames(Btab) <- c("Conflict Accumulator (L)",
-                    "Non-conflict Accumulator (L)",
-                    "Conflict Accumulator (H)",
-                    "Non-conflict Accumulator (H)")
-colnames(Btab) <- c("Session One", "Session Two", "Session Three")
-
-pandoc.table(Btab)
-
-
-
-```
-
-
-
-
-# Posterior Exploration
-
-To summarise, we found substantial evidence that both high- and low- reliability automation decision aids are incorporated into decision making with an inhibition mechanism, strong evidence that participants relied on an additional excitation mechanism for high-reliability automation, and weaker evidence of this mechanism for low-reliability automation. We also found some evidence that thresholds were reduced when automation was provided, particularly for high-reliability automation. Here, we conduct simulations to investigate the role of these mechanisms in explaining the observed effects of automation. We focus on automation costs and benefits to both accuracy and RT. To investigate, we effectively removed mechanisms from the model by changing parameter values. To the extent removing these mechanisms causes miss-fit to observed effects that the model previously fitted, those mechanisms allowed the model to fit the effects. To remove excitation from the model, accumulation rates to decisions in line with the decision aid advice  were set to the values estimated from matched manual trials. Similarly, to remove inhibition, accumulation rates to decisions disagreeing with the decision aid were set equal to their value in matched manual trials. To remove threshold effects, thresholds were set to the levels observed in manual conditions. 
-
-Figures 10 and 11 depict the results of our posterior exploration. We found major miss-fits to automation’s effects on accuracy when inhibition was removed for both high and low reliability conditions, and also major miss-fits to accuracy effects for the high-reliability condition when excitation was removed. This suggests that inhibition was important for explaining automation’s effects on accuracy in both conditions, and excitation important in the high-reliability condition. We also found that removing inhibition from the model caused major miss-fits to the effects of automation on RT for both high and low reliability conditions, particularly costs of incorrect automation to RT, demonstrating the importance of the inhibition mechanism in driving this cost. In contrast to these findings, setting thresholds to manual levels had little effect on predictions regarding automation’s effect, suggesting they were relatively less important to model predictions.   
-
-```{r echo= FALSE}
-postexp_accs_cap <- "Figure 8. Exploration of the importance of model mechanisms in explaining automation’s effects on accuracy. Accuracy benefit refers to improvement of accuracy on automation-correct trials, and accuracy cost to decrements in accuracy on automation-incorrect trials. Model mechanisms were removed by setting parameter values equal to matched manual conditions and resulting miss-fit indicates the degree to which that mechanism was responsible for the full model’s ability to predict effects. Model predictions correspond to the white circles, the posterior means correspond to the black shaded dots. The error bars display the 95% posterior credible intervals of the predictions."
-```
-
-```{r echo= FALSE , results = "asis", message=FALSE, warning=FALSE, fig.width = 8, fig.height=7, fig.cap=postexp_accs_cap}
-
-
-combined %>% ggplot(aes(y=mean, x=eff)) + geom_point(size=2)+ 
-  geom_errorbar(aes(ymax = upper, ymin = lower), width= 0.2) +
-  geom_point(aes_string(x = 'eff', y= 'data'), pch=21, size=3, colour="black")+
- geom_line(aes(group=1,y=data), linetype=2) +facet_grid(model~Auto) +xlab("")+
-  ylab("") +
-    theme(text = element_text(size = 14))
 
 ```
 
@@ -442,7 +236,9 @@ postexp_RTs_cap <- "Figure 9. *Exploration of the importance of model mechanisms
 
 ```{r echo= FALSE , results = "asis", message=FALSE, warning=FALSE, fig.width = 8, fig.height=7, fig.cap=postexp_RTs_cap}
 
-combined_RT %>% ggplot(aes(y=mean, x=eff)) + geom_point(size=2)+ 
+combined_RT %>% 
+  mutate(Auto=str_replace(Auto, "(Cost|Benefit)", "\\1, seconds")) %>% 
+  ggplot(aes(y=mean, x=eff)) + geom_point(size=2)+ 
   geom_errorbar(aes(ymax = upper, ymin = lower), width= 0.2) +
   geom_point(aes_string(x = 'eff', y= 'data'), pch=21, size=3, colour="black")+
   geom_line(aes(group=1,y=data), linetype=2) +facet_grid(model~Auto) +xlab("")+

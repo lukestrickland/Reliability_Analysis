@@ -80,43 +80,6 @@ accs_check %>% filter(acc<0.6 & Automation=="Automation Success")
 
 ```
 
-```{r accuracy_descriptives_fortext, echo= FALSE, message=FALSE, warning=FALSE}
-#Descriptives for text chunks
-S <- accs %>% group_by(Stimulus) %>% summarise(mean(acc))
-S_se <- se2(accs, facs="Stimulus", dvnam="acc")
-
-sess <- accs %>% group_by(Session) %>% summarise(mean(acc))
-sess_se <- se2(accs, facs="Session", dvnam="acc")
-
-cond_auto <- accs %>% group_by(Condition, Automation) %>% summarise(mean(acc))
-cond_auto_se <- arr2df(
-  se2(accs, facs=c("Condition", "Automation"), dvnam="acc"))
-
-# pandoc.table(cond_auto)
-```
-
-##### Accuracy
-Participant accuracies are displayed in Figure 5. There were main effects of stimulus type, session, condition, and automation accuracy. Responses were more accurate to conflict trials 
-(*M* = `r S[S$Stimulus=="Conflict",2]`, *SE* = `r S_se["Conflict"]`)
-than to non-conflict trials
-(*M* = `r S[S$Stimulus=="Non-conflict",2]`, *SE* = `r S_se["Non-conflict"]`).
-Accuracy increased from session one
-(*M* = `r sess[sess$Session=="One",2]`, *SE* = `r sess_se["One"]`)
-to session two
-(*M* = `r sess[sess$Session=="Two",2]`, *SE* = `r sess_se["Two"]`),
-and was higher still on session three (*M* = `r sess[sess$Session=="Three",2]`, *SE* = `r sess_se["Three"]`). The effects of automation condition and automation accuracy interacted. On trials where the automation was correct,
-accuracy was higher in the low-reliability automation condition (*M* = `r cond_auto[cond_auto$Condition=="Automation_Low" & cond_auto$Automation=="Automation Success",3]`, 
-*SE* = `r cond_auto_se[cond_auto_se$Condition=="Automation_Low" & cond_auto_se$Automation=="Automation Success",3]`) than on matched manual trials (*M* = `r cond_auto[cond_auto$Condition=="Manual" & cond_auto$Automation=="Automation Success",3]`, 
-*SE* = `r cond_auto_se[cond_auto_se$Condition=="Manual" & cond_auto_se$Automation=="Automation Success",3]`),
-and higher still in the high-reliability automation condition (*M* = `r cond_auto[cond_auto$Condition=="Automation_High" & cond_auto$Automation=="Automation Success",3]`, 
-*SE* = `r cond_auto_se[cond_auto_se$Condition=="Automation_High" & cond_auto_se$Automation=="Automation Success",3]`). On trials where the automation was incorrect,
-accuracy was lower in the low-reliability automation (*M* = `r cond_auto[cond_auto$Condition=="Automation_Low" & cond_auto$Automation=="Automation Failure",3]`, 
-*SE* = `r cond_auto_se[cond_auto_se$Condition=="Automation_Low" & cond_auto_se$Automation=="Automation Failure",3]`) condition than on matched manual trials (*M* = `r cond_auto[cond_auto$Condition=="Manual" & cond_auto$Automation=="Automation Failure",3]`, 
-*SE* = `r cond_auto_se[cond_auto_se$Condition=="Manual" & cond_auto_se$Automation=="Automation Failure",3]`),
-and lower still in the high-reliability automation condition (*M* = `r cond_auto[cond_auto$Condition=="Automation_High" & cond_auto$Automation=="Automation Failure",3]`, 
-*SE* = `r cond_auto_se[cond_auto_se$Condition=="Automation_High" & cond_auto_se$Automation=="Automation Failure",3]`).
-
-
 
 ```{r echo= FALSE}
 acc_cap <- "*Figure 5.* Conflict detection accuracies. Each panel corresponds to one stimulus type, on one experimental session. The error bars included were calculated using the Morey (2008) bias-corrected method for within-subjects error bars."
@@ -149,7 +112,7 @@ ggplot(plot.df, aes(Automation, meanacc)) +geom_point(aes(col=Condition, shape=C
     ymin = meanacc - seacc,
     colour = Condition, width = 0.3
   )) +ylab ("Accuracy") +xlab("") +
-    theme(text = element_text(size = 16))
+    theme(text = element_text(size = 16)) +ylim(0,1)
 
 ```
 
@@ -188,46 +151,6 @@ ggplot(plot.df, aes(Condition, meanacc)) +geom_point(size=3)  +
 
 ```
 
-
-
-```{r RT_descriptives_fortext, echo= FALSE, message=FALSE, warning=FALSE}
-#Descriptives for text chunks
-S_RT <- RTs %>% group_by(Stimulus) %>% summarise(mean(RT))
-S_se_RT <- se2(RTs, facs="Stimulus", dvnam="RT")
-
-sess_RT <- RTs %>% group_by(Session) %>% summarise(mean(RT))
-sess_se_RT <- se2(RTs, facs=c("Session"), 
-                    dvnam="RT")
-
-cond_auto_RT <- RTs %>% group_by(Condition, Automation) %>% summarise(mean(RT))
-cond_auto_se_RT <- arr2df(
-  se2(RTs, facs=c("Condition", "Automation"), dvnam="RT"))
-
-# pandoc.table(cond_auto_RT)
-
-
-RTs_nos3 <- cleandats %>% filter(block!="three" & Session!="Three") %>% group_by(s, Stimulus, Condition, Automation, Session) %>% 
-  filter(C) %>% 
-  summarise(RT=mean(RT))%>% arrange(Automation)
-
-
-cond_auto_RT_nos3 <- RTs_nos3 %>% group_by(Condition, Automation) %>% summarise(mean(RT))
-
-# pandoc.table(cond_auto_RT_nos3)
-
-```
-
-
-##### Response Times
-Mean correct RTs are displayed in Figure 6. There were main effects of stimulus type, session, condition, and automation accuracy. Correct responses were slower to conflict trials 
-(*M* = `r S_RT[S_RT$Stimulus=="Conflict",2]`, *SE* = `r S_se_RT["Conflict"]`)
-than to non-conflict trials
-(*M* = `r S_RT[S_RT$Stimulus=="Non-conflict",2]`, *SE* = `r S_se_RT["Non-conflict"]`).
-RT decreased from session one
-(*M* = `r sess_RT[sess_RT$Session=="One",2]`, *SE* = `r sess_se["One"]`)
-to session two
-(*M* = `r sess_RT[sess_RT$Session=="Two",2]`, *SE* = `r sess_se["Two"]`),
-and decreased further on session three (*M* = `r sess_RT[sess_RT$Session=="Three",2]`, *SE* = `r sess_se["Three"]`). On trials where automation was correct, RTs were significantly faster in the high-reliability condition (*M* = `r cond_auto_RT %>% filter(Automation=='Automation Success' & Condition=="Automation_High") %>% pull('mean(RT)')` *SE* = `r cond_auto_se_RT %>% filter(Automation=='Automation Success' & Condition=="Automation_High") %>% .$y`) than in either of the other conditions. However, there were not significant  differences in correct RTs between the low-reliability automation condition (*M* = `r cond_auto_RT %>% filter(Automation=='Automation Success' & Condition=="Automation_Low") %>% pull('mean(RT)')`, *SE* = `r cond_auto_se_RT %>% filter(Automation=='Automation Success' & Condition=="Automation_Low") %>% .$y`) and matched manual trials (*M* = `r cond_auto_RT %>% filter(Automation=='Automation Success' & Condition=='Manual') %>% pull('mean(RT)')` *SE* = `r cond_auto_se_RT %>% filter(Automation=='Automation Success' & Condition=='Manual')%>% .$y`). For trials where the automation was incorrect, correct RTs were slower in the low-reliability condition (*M* = `r cond_auto_RT %>% filter(Automation=='Automation Failure' & Condition=="Automation_Low") %>% pull('mean(RT)')`, *SE* = `r cond_auto_se_RT %>% filter(Automation=='Automation Failure' & Condition=="Automation_Low") %>% .$y`)  than in the manual condition (*M* = `r cond_auto_RT %>% filter(Automation=='Automation Failure' & Condition=='Manual') %>% pull('mean(RT)')` *SE* = `r cond_auto_se_RT %>% filter(Automation=='Automation Failure' & Condition=='Manual')%>% .$y`), and slowest of all in the high-reliability condition (*M* = `r cond_auto_RT %>% filter(Automation=='Automation Failure' & Condition=="Automation_High") %>% pull('mean(RT)')` *SE* = `r cond_auto_se_RT %>% filter(Automation=='Automation Failure' & Condition=="Automation_High") %>% .$y`). 
 
 
 ```{r echo= FALSE}

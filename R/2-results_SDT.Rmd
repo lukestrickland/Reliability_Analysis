@@ -69,7 +69,18 @@ RTs <- cleandats %>% group_by(s, Stimulus, Condition, Automation, Session) %>%
 
 ```{r check_participants,  echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
 
-accs_SDT <- accs %>% mutate(acc=pmin(0.99,pmax(acc, .01)))
+
+
+
+acc_SDT <-
+  cleandats %>% group_by(s, Stimulus, Condition, Automation, Session) %>% 
+  filter(!is.na(R)) %>% summarise(count = sum(C)+0.5, len=length(C)) %>%
+  mutate(acc=count/len) %>% 
+  arrange(s) %>% arrange(Automation)
+
+
+
+# accs_SDT <- accs %>% mutate(acc=pmin(0.99,pmax(acc, .01)))
 
 dprimes <- accs_SDT  %>% 
   group_by(s, Condition, Automation) %>% 
@@ -97,10 +108,12 @@ plot.df$Automation <- factor(plot.df$Automation,
                              labels= c("Automation Correct", "Automation Incorrect"))
 
 plot.df$Condition <- factor(plot.df$Condition, 
-                             levels=c("Manual", "Automation_Low", "Automation_High"),
-                             labels= c("Manual", "Low Reliability", "High Reliability"))
+                             levels=c("Automation_High", "Automation_Low", "Manual"),
+                             labels= c("High Reliability", "Low Reliability", "Manual"))
+
 
 ggplot(plot.df, aes(Automation, c)) +geom_point(aes(col=Condition, shape=Condition), size=3)  + 
+  scale_colour_manual(values = c("#E66100", "#5D3A9B", "black"))+
   geom_errorbar(aes(
     ymax = c + 1.96*y,
     ymin = c - 1.96*y,

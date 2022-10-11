@@ -215,7 +215,7 @@ make_contrast_table <- function (contrast_summary) {
   drop_cols <- c("estimate", "SE", "df")
 
   pandoc.table(
-    contrast_summary %>% select(-one_of(drop_cols))
+    contrast_summary %>% dplyr::select(-one_of(drop_cols))
     )
 
 }

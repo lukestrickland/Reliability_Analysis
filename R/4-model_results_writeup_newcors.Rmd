@@ -1,0 +1,80 @@
+---
+title: "Automation Failures in ATC: Standard Results"
+author: "ljgs"
+date: "20/11/2019"
+output:
+  word_document:
+    reference_docx: ../assets/apa.docx
+  pdf_document: default
+  html_document: default
+---
+by Luke Strickland
+
+```{r load_packages_and_data, echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
+
+source("dmc/dmc.R")
+source("dmc/dmc_extras.R")
+source("R/0-analysis_functions.R")
+load_model ("LBA", "lba_B.R")
+
+theme_set(theme_simple())
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(pander)
+library(snowfall)
+options(digits=2)
+
+fitpath <- file.path(set_fit_path(), "Reliability_Analysis")
+loadpath <- create_loadpath(fitpath)
+savepath <- create_savepath(fitpath)
+
+
+loadpath("model_correlations_A_lb_TRANSFORMED.RData")
+
+
+```
+
+
+# Individual differences
+
+Table 4.
+*Plausible value correlations between model mechanisms, benefits of automation, costs of automation, and trust in automation. We constructed distributions of "plausible values" (Ly et al., 2017) of correlations by calculating the correlation across participants between model parameters and dependent variables for every posterior sample.  This was then corrected for population-level inference (Ly et al., 2018). We report posterior mean (95% credible interval) of these correlation distributions. We obtained a single estimate of excitation and inhibition for each participant by averaging over conflict and non-conflict trials, and over automation-correct and automation-incorrect trials*
+
+```{r echo= FALSE , results = "asis", message=FALSE, warning=FALSE, fig.width = 8, fig.height=6}
+
+
+
+
+MCIs <- function(MCI){
+  MCI <- round(MCI, 2)
+  paste0(MCI["M"], " (", MCI["LCI"], " - ", MCI["HCI"], ")")
+  
+}
+
+cortab <- rbind(
+  c("", ""),
+  c(MCIs(ex_L_benefit), MCIs(inh_L_benefit)),
+  c(MCIs(ex_L_cost), MCIs(inh_L_cost)),
+  c(MCIs(ex_L_benefit_RT), MCIs(inh_L_benefit_RT)),
+  c(MCIs(ex_L_cost_RT), MCIs(inh_L_cost_RT)), 
+  c(MCIs(ex_L_trust), MCIs(inh_L_trust)), 
+  c("", ""),
+  c(MCIs(ex_H_benefit), MCIs(inh_H_benefit)),
+  c(MCIs(ex_H_cost), MCIs(inh_H_cost)),
+  c(MCIs(ex_H_benefit_RT), MCIs(inh_H_benefit_RT)),
+  c(MCIs(ex_H_cost_RT), MCIs(inh_H_cost_RT)),
+  c(MCIs(ex_H_trust), MCIs(inh_H_trust))
+)
+
+rownames(cortab) <- c("Low Reliability", "Accuracy Benefit", "Accuracy Cost", "RT Benefit",
+                        "RT Cost", "Trust",
+                      "High Reliability",
+                      "Accuracy Benefit", "Accuracy Cost", "RT Benefit",
+                        "RT Cost", "Trust")
+colnames(cortab) <- c("Excitation ", "Inhibition ")
+
+pandoc.table(cortab)
+
+```

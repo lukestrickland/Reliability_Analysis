@@ -1,0 +1,89 @@
+---
+title: "Automation Reliability in ATC: Mixed Model Analyses"
+author: "ljgs"
+date: "20/09/2021"
+output:
+  word_document:
+    reference_docx: ../assets/apa.docx
+  pdf_document: default
+  html_document: default
+---
+by Luke Strickland
+
+```{r load_packages_and_data, echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
+
+
+
+library(tidyverse)
+library(ggplot2)
+library(lme4)
+library(car)
+library(apa)
+# library(lsmeans)
+library(pander)
+options(digits=2)
+source("R/0-analysis_functions.R")
+
+load("img/cleandats.RData")
+
+cleandats <- cleandats %>% mutate(C = toupper(S)==R)
+
+colnames(cleandats)[colnames(cleandats)=="sess"] <- "Session"
+colnames(cleandats)[colnames(cleandats)=="cond"] <- "Condition"
+colnames(cleandats)[colnames(cleandats)=="S"] <- "Stimulus"
+colnames(cleandats)[colnames(cleandats)=="failtrial"] <- "Automation"
+
+cleandats$Session <- factor(cleandats$Session, levels=c("1", "2", "3"),
+                      labels=c("One", "Two", "Three"))
+
+cleandats$Condition <- factor(cleandats$Condition , levels=c("AUTO_L", "AUTO_H", "MANUAL"),
+                      labels=c("Automation_Low", "Automation_High", "Manual"))
+
+cleandats$Automation <- factor(cleandats$Automation, levels=c("nonf", "fail"),
+                      labels=c("Automation Success", "Automation Failure"))
+
+cleandats$Stimulus <- factor(cleandats$Stimulus, levels=c("c", "n"),
+                      labels=c("Conflict", "Non-conflict"))
+
+
+tmp <- 1:24
+tmp <- tmp[!tmp==4]
+full_balance <- c(tmp, 28) 
+
+cleandats <- cleandats %>% filter(s %in% full_balance)
+
+theme_set(theme_simple())
+
+accs <-
+  cleandats %>% group_by(s, Stimulus, Condition, Automation, Session) %>% 
+  filter(!is.na(R)) %>% summarise(acc = mean(C)) %>%
+  arrange(s) %>% arrange(Automation)
+
+RTs <- cleandats %>% group_by(s, Stimulus, Condition, Automation, Session) %>% 
+  filter(C) %>% 
+  summarise(RT=mean(RT))%>% arrange(Automation)
+
+
+```
+
+
+```{r check_participants,  echo= FALSE , results = "hide", message=FALSE, warning=FALSE}
+
+accs_marginal <-
+  cleandats %>% group_by(s, Stimulus, Condition, Session) %>% 
+  filter(!is.na(R)) %>% summarise(acc = mean(C)) %>%
+  arrange(s) 
+
+mean_accs_marginal <- accs_marginal %>% group_by(Condition) %>%
+  summarise(meanacc=mean(acc))
+
+se2(accs_marginal, facs= c("Condition"),
+dvnam="acc", sfac="s")
+
+
+```
+
+
+
+
+

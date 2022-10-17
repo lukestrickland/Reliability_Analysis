@@ -142,10 +142,5 @@ pandoc.table(
 )
 
 
-pandoc.table(
-  trust_scores_p %>% group_by(Session) %>% summarise(cor(score[Condition=="H"],
-                                                         score[Condition=="L"]))
-)
-
 
 ```
